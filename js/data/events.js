@@ -514,10 +514,10 @@
       id: 'sys_broke', repeat: true, icon: 'money', who: 'The accountant', title: 'The account is empty',
       text: "Payroll is due and the bank says no.",
       choices: [
-        { label: "Rush out an emergency supporter pack", cond: function (S) { return !!S.flags.u_mtx; }, fx: { moneyW: 8, mood: -5 },
+        { label: "Rush out an emergency supporter pack", cond: function (S) { return !!S.flags.u_mtx; }, fx: { moneyW: 14, mood: -5 },
           result: "It has wings on it. It sells. The top comment asks whether you are okay." },
-        { label: "Call the investors", fx: { moneyW: 10, revMult: 0.94 }, result: "They wire it. They also want a slice of everything from now on." },
-        { label: "Lay off a fifth of the studio", fx: { staffPct: -0.2, sanity: -15, moneyW: 3 }, result: "The office is quieter. Nobody uses the good coffee machine." }
+        { label: "Call the investors", fx: { moneyW: 18, revMult: 0.96 }, result: "They wire it. They also want a slice of everything from now on." },
+        { label: "Lay off a fifth of the studio", fx: { staffPct: -0.2, sanity: -15, moneyW: 8 }, result: "The office is quieter. Nobody uses the good coffee machine." }
       ]
     },
     {

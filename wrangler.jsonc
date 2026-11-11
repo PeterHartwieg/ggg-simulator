@@ -10,7 +10,7 @@
     "binding": "ASSETS",
     "not_found_handling": "404-page"
   },
-  // Play statistics. Read them with: npx wrangler d1 execute ggg-simulator-stats --remote --file tools/stats.sql
+  // Play statistics. Read them with: node tools/stats.js
   "d1_databases": [
     { "binding": "DB", "database_name": "ggg-simulator-stats" }
   ],

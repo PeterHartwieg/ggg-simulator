@@ -1,5 +1,5 @@
--- Play statistics. Run with:
---   npx wrangler d1 execute ggg-simulator-stats --remote --file tools/stats.sql
+-- Play statistics. Run with: node tools/stats.js
+-- Each query starts with one comment line, which the tool prints as its heading. Keep a blank line between queries.
 
 -- Page loads and games started, per day.
 SELECT d.day, COALESCE(v.n, 0) AS page_loads, COALESCE(r.games, 0) AS games_started
@@ -18,7 +18,7 @@ FROM steps;
 -- Where games stop. The last release shipped by games that never reached the ending.
 SELECT COALESCE(NULLIF(last_release, ''), 'before the first release') AS stopped_after, COUNT(*) AS games,
        ROUND(AVG(secs) / 60.0, 1) AS avg_minutes, ROUND(AVG(money)) AS avg_money, ROUND(AVG(mood)) AS avg_reddit, ROUND(AVG(sanity)) AS avg_sanity
-FROM runs WHERE ended = 0 AND last_at < datetime('now', '-1 hour')
+FROM runs WHERE ended = 0 AND datetime(last_at) < datetime('now', '-1 hour')
 GROUP BY 1 ORDER BY games DESC LIMIT 25;
 
 -- How each release goes for players. Quality 1.0 is par. vs_real is the launch peak against the real Steam peak.

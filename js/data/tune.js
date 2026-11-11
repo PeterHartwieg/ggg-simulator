@@ -10,6 +10,15 @@
     hireWeeks: 3,           // recruiting cost, in weeks of salary
     hireRate: 0.35,         // share of current headcount you can hire per release
     hireCap: 12,            // Auckland only has so many game developers
+    // The game follows the studio's history, so a player who only reads the cards still gets through.
+    ease: 0.95,             // a release is on par at this share of what the real studio would have built
+    growFloor: 0.88,         // a release never starts below this share of the real headcount: people join by themselves
+    crunchFloor: 25,        // crunch ends by itself when sanity falls this low
+    debtPay: 0.42,          // tech debt paid down per week at the real studio's server work
+    moodFloor: -14,         // the worst a single launch can do to the subreddit
+    moodPar: 0.85,          // a launch at this quality leaves the subreddit where it was. Solid never hurts.
+    brokeEvery: 26,         // weeks in the red before the accountant asks again
+    revFloor: 0.7,          // investors and bad deals can cost this much of the income for good, and no more
     serverCost: 0.75,       // $ per concurrent player per week
     burst: 1.0,             // launch-week pack sales, in weeks of per-player income
     postRate: 0.3,          // chance of a subreddit post each week

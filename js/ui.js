@@ -226,7 +226,7 @@
       html += '<div class="flask f-' + s + (open ? '' : ' locked') + (open && S.crunch ? ' hot' : '') + (open && proj < 0.7 ? ' low' : '') + '" data-tip="' + h(D.streams[s].what + (open ? ' On course for ' + pc(proj) + '.' + who : '')) + '"' + (glow ? ' style="' + glow + '"' : '') + '>' +
         '<kbd>' + (si + 1) + '</kbd><div class="vial"' + (give ? ' style="' + give + '"' : '') + '><i class="proj" style="height:' + vialH(proj) + '%"></i><i class="now" style="height:' + vialH(now) + '%"></i>' + extra + '<em></em></div>' +
         '<small>' + FLASK[s] + '</small>' +
-        '<div class="ctl"><button class="btn" data-act="pip" data-s="' + s + '" data-n="-1"' + (!open || S.alloc[s] <= 0 ? ' disabled' : '') + '>&minus;</button><span>' + Math.round(S.alloc[s] / E.PIPS * 100) + '%</span>' +
+        '<div class="ctl"><button class="btn" data-act="pip" data-s="' + s + '" data-n="-1"' + (!open || S.alloc[s] <= (E.MIN_SHARE[s] || 0) ? ' disabled' : '') + '>&minus;</button><span>' + Math.round(S.alloc[s] / E.PIPS * 100) + '%</span>' +
         '<button class="btn" data-act="pip" data-s="' + s + '" data-n="1"' + (!open ? ' disabled' : '') + '>+</button></div></div>';
     });
     html += '</div>' + globe('mana', ann ? S.hype : 0, 'Hype for the next launch' + (S.cyc.marketed ? '. The trailer adds 12 on launch day.' : ''), ICON.market, ann && S.cyc.marketed ? 12 : 0);
@@ -795,6 +795,9 @@
       if (type === 'post') addPost(data);
       else if (type === 'egg') { drop(h(D.eggs[data].name)); Snd.play('egg'); }
       else if (type === 'future') drop('Long game: ' + h(data.name), true);
+      /* The studio grows with its history, and a spent team stops crunching by itself. */
+      else if (type === 'joined' && S) { drop('+' + data.n + ' joined the studio', true); if (data.moved) drop('Moved to ' + h(D.offices[S.office].name), true); }
+      else if (type === 'crunchEnd') { drop('The team stopped crunching', true); Snd.play('no'); }
     });
   }
 

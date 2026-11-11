@@ -23,7 +23,7 @@ Then open `http://127.0.0.1:8642`.
 - `js/data/` holds the releases, events, subreddit posts, secrets and tuning numbers.
 - `tools/sim.js` plays whole games and prints how each release went: `node tools/sim.js par`
 - `tools/import-art.py` rebuilds the bundled pictures from `art/sources.json`. It needs Pillow.
-- `worker/stats.js` records anonymous play statistics. `tools/stats.sql` reads them.
+- `worker/stats.js` records anonymous play statistics. `node tools/stats.js` prints them.
 
 ## Deploy
 

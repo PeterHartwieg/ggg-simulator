@@ -55,7 +55,7 @@
       v: 1, week: 0, money: D.tune.startMoney,
       staff: { code: 1, art: 0, design: 1, qa: 0, comm: 0 },
       founders: 2, heroes: [], office: 0,
-      alloc: { content: 6, polish: 2, mtx: 0, infra: 2, future: 0 },
+      alloc: parAlloc(0),
       crunch: false, serverTier: 1,
       mood: 60, hype: 0, vision: 70, sanity: 85, debt: 5, rep: 1,
       players: 0, peak: 0, floor: 0, launchWeek: -1, decay: 0.2,
@@ -93,7 +93,7 @@
 
   E.overstaff = function (S) { return E.headcount(S) / Math.max(3, E.parHeadcount(S.week)); };
   E.prod = function (S) {
-    var p = 0.7 + 0.4 * S.sanity / 100;
+    var p = 0.86 + 0.2 * S.sanity / 100; // a tired team is slower, not useless
     p *= 1 - S.debt / 300;
     if (S.crunch) p *= 1.3;
     var over = E.overstaff(S);
@@ -141,7 +141,7 @@
   }
   E.parRates = parRates;
 
-  E.futTarget = function (S, f) { return f._target * (S.fut.scale || 1); };
+  E.futTarget = function (S, f) { return f._target * (S.fut.scale || 1) * D.tune.ease; };
   E.activeFuture = function (S) {
     for (var i = 0; i < D.futures.length; i++) {
       var f = D.futures[i];
@@ -207,16 +207,19 @@
     if (s === 'future') return !!E.activeFuture(S);
     return true;
   };
+  /* The next release always keeps a fifth of the team, so no run of clicks can starve it. */
+  E.MIN_SHARE = { content: 2 };
   E.setPip = function (S, s, delta) {
     if (!E.streamOpen(S, s)) return false;
+    function spare(o) { return S.alloc[o] - (E.MIN_SHARE[o] || 0); }
     if (delta > 0 && E.freePips(S) <= 0) {
       // Take from the fattest other stream so one click always does something.
       var from = null;
-      STREAMS.forEach(function (o) { if (o !== s && S.alloc[o] > 0 && (!from || S.alloc[o] > S.alloc[from])) from = o; });
+      STREAMS.forEach(function (o) { if (o !== s && spare(o) > 0 && (!from || S.alloc[o] > S.alloc[from])) from = o; });
       if (!from) return false;
       S.alloc[from]--;
     }
-    if (delta < 0 && S.alloc[s] <= 0) return false;
+    if (delta < 0 && spare(s) <= 0) return false;
     S.alloc[s] += delta > 0 ? 1 : -1;
     return true;
   };
@@ -286,7 +289,21 @@
       t.content += r.content; t.polish += r.polish; t.mtx += r.mtx; t.infra += r.infra;
     }
     t.content *= scope || 1;
+    ['content', 'polish', 'mtx', 'infra'].forEach(function (s) { t[s] *= D.tune.ease; });
     return t;
+  }
+
+  /* The studio grows with its history. If it has fallen behind the real one, people join by themselves
+     at the start of a release, free of hiring cost, and the studio moves when it runs out of desks. */
+  function grow(S, week) {
+    var want = Math.floor(E.parHeadcount(week) * D.tune.growFloor), joined = 0, from = S.office;
+    while (E.headcount(S) < want) {
+      if (E.headcount(S) >= E.capacity(S)) { if (!E.nextOffice(S)) break; S.office++; }
+      var total = E.headcount(S) + 1, best = null, gap = -1e9;
+      E.DEPTS.forEach(function (d) { var g = total * COMP[d] - S.staff[d]; if (g > gap) { gap = g; best = d; } });
+      S.staff[best]++; joined++;
+    }
+    if (joined) emit('joined', { n: joined, moved: S.office !== from });
   }
 
   function unlock(S, k) {
@@ -307,6 +324,7 @@
       mods: { peak: 1, ret: 1, rev: 1, q: 0, mood: 0 }
     };
     var ship = Math.max(U.weekOf(c.date), S.week + 1);
+    grow(S, Math.round((S.week + ship) / 2));
     S.cyc.target = targets(S.week, ship, c.scope);
     (c.unlock || []).forEach(function (k) { unlock(S, k); });
     S.hiresLeft = Math.max(2, Math.min(D.tune.hireCap, Math.ceil(E.headcount(S) * D.tune.hireRate))) * Math.max(1, Math.round((ship - S.week) / 16));
@@ -403,7 +421,11 @@
       if (f) { S.fut.pts = Math.max(0, S.fut.pts + fx.future * E.futTarget(S, f)); chip(f.short + ' ' + signPct(fx.future), fx.future > 0); }
     }
     if (fx.futScale) { S.fut.scale = (S.fut.scale || 1) * fx.futScale; chip('Long game scope ' + pct(fx.futScale), null); }
-    if (fx.revMult) { S.revMult *= fx.revMult; chip('Income ' + pct(fx.revMult) + ' for good', fx.revMult > 1); }
+    if (fx.revMult) {
+      var rm = Math.max(D.tune.revFloor, S.revMult * fx.revMult);
+      if (rm !== S.revMult) chip('Income ' + pct(rm / S.revMult) + ' for good', rm > S.revMult);
+      S.revMult = rm;
+    }
     if (fx.players) {
       S.peak *= fx.players; S.floor *= fx.players; S.players *= fx.players;
       chip('Players ' + pct(fx.players), fx.players > 1);
@@ -577,7 +599,7 @@
   function checkMoney(S) {
     if (S.money >= 0) { S.redWeeks = 0; return false; }
     S.redWeeks++;
-    if (S.redWeeks === 1 || S.redWeeks % 10 === 0) { fire(S, E._eventById.sys_broke); return true; }
+    if (S.redWeeks === 1 || S.redWeeks % D.tune.brokeEvery === 0) { fire(S, E._eventById.sys_broke); return true; }
     return false;
   }
 
@@ -700,10 +722,14 @@
 
     // Tech debt: infra work pays it down, at par slightly slower than releases add it.
     var parInfra = parRates(S.week).infra;
-    if (parInfra > 0) S.debt = U.clamp(S.debt - 0.32 * (r.infra / parInfra), 0, 100);
+    if (parInfra > 0) S.debt = U.clamp(S.debt - D.tune.debtPay * (r.infra / parInfra), 0, 100);
 
     // Sanity: crunch burns it, time off restores it.
-    if (S.crunch) { S.sanity = U.clamp(S.sanity - 1.7, 0, 100); S.tot.crunchWeeks++; }
+    if (S.crunch) {
+      S.sanity = U.clamp(S.sanity - 1.7, 0, 100); S.tot.crunchWeeks++;
+      /* A spent team stops by itself. Nobody is ground down to nothing by a forgotten switch. */
+      if (S.sanity <= D.tune.crunchFloor) { S.crunch = false; emit('crunchEnd'); }
+    }
     else S.sanity += (78 - S.sanity) * 0.035;
     var month = U.monthOf(S.week);
     if (month === 11 && U.monthOf(S.week + 1) === 0) S.sanity = U.clamp(S.sanity + 5, 0, 100); // Christmas break
@@ -782,7 +808,7 @@
     }
     res.bugs = Math.floor(U.clamp((1.15 - polishQ) * 2.2 + S.debt / 60 + E.rand() * 0.8 - 0.4, 0, 4));
 
-    var moodDelta = (quality - 0.9) * 40 - res.bugs * 2.5 + cy.mods.mood;
+    var moodDelta = (quality - T.moodPar) * 40 - res.bugs * 2.5 + cy.mods.mood;
     if (res.crash) moodDelta -= 9; else if (res.queue) moodDelta -= 2;
 
     if (online) {
@@ -811,7 +837,7 @@
       if (!c.est) S.tot.launches++;
     }
 
-    res.moodDelta = Math.round(U.clamp(moodDelta, -28, 22));
+    res.moodDelta = Math.round(U.clamp(moodDelta, D.tune.moodFloor, 22));
     if (S.flags.announced) S.mood = U.clamp(S.mood + res.moodDelta, 0, 100);
     S.rep = U.clamp(S.rep + 0.25 * ((0.7 + 0.35 * quality) - S.rep), 0.4, 2);
     S.sanity = U.clamp(S.sanity - (res.crash ? 6 : 0) - res.bugs * 1.5 + (quality > 1.05 ? 4 : 0), 0, 100);
