@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "file": "audio/menu.mp3",
+  "title": "Main Menu",
+  "artist": "Adgio Hutchings",
+  "album": "Path of Exile Soundtrack",
+  "year": 2013,
+  "durationSeconds": 131.869325,
+  "source": "https://www.digibros.lv/temp/Path-Of-Exile_Audio-all_I_downloaded_in_13_years.zip",
+  "archiveMember": "Path_of_Exile_EST_MP3/1- Main Menu.mp3",
+  "sourcePage": "https://www.reddit.com/r/pathofexile/comments/177p9uf/lioneyes_watch_old_the_original_music/",
+  "originalSample": "https://s3.amazonaws.com/pathofexile-audio/Main-Menu-v3-Final-x4.mp3",
+  "referencePage": "https://pathofexile.noktis.pl/muzyka",
+  "sha256": "8799faffaa374d5ca408ed1112f3f11638353acfce25d837bbef5bc43b5a6623",
+  "notes": [
+    "Classic Path of Exile 1 menu theme, as requested; not the later Fall of Oriath theme or Path of Exile 2.",
+    "Unmodified MP3 from a community archive of the official soundtrack downloads. Embedded tags identify Main Menu, Adgio Hutchings, Path of Exile Soundtrack, 2013.",
+    "The original GGG sample link is now unavailable. The reference page preserves that link and identifies the menu music.",
+    "Bundled locally. Playback loops across the title screen and game, starts after interaction when the browser permits, and follows the existing Music slider and master mute.",
+    "Composer attribution is verified. Current ownership of the composition and recording, and permission to reuse this track in a fan game, have not been verified. GGG publishing the soundtrack does not by itself establish ownership."
+  ]
+}

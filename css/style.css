@@ -32,7 +32,10 @@ body.at-title #app { visibility: hidden; }
 
 /* ---------- top line ---------- */
 #top { position: relative; z-index: 3; flex: 0 0 auto; display: flex; align-items: center; gap: 18px; padding: 6px 16px; background: var(--noise), linear-gradient(#211a10, #0d0a07); border-bottom: 1px solid #000; box-shadow: 0 1px 0 var(--bronze), 0 8px 22px rgba(0, 0, 0, .6); }
-#top .logo { height: 30px; display: block; filter: drop-shadow(0 1px 2px #000); }
+/* The mark at top-bar size: a larger plate with clean letters, because the worn look turns to mush this small. */
+#top .mark { font-size: 36px; margin: 0; filter: drop-shadow(0 1px 2px #000); }
+#top .mark b { margin-top: -.3em; }
+#top .mark b i { font-size: .27em; letter-spacing: .14em; -webkit-mask-image: none; mask-image: none; }
 .st { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .st b { font: 600 19px var(--display); color: var(--bright); letter-spacing: .02em; }
 .st small { color: var(--dim); font: 11px var(--sans); margin-left: 3px; }
@@ -110,6 +113,14 @@ body.at-title #app { visibility: hidden; }
 .c-head small { display: block; font: 600 15px/1.2 var(--display); color: var(--hc); opacity: .82; letter-spacing: .08em; }
 .c-pic { display: block; width: 100%; height: 170px; object-fit: cover; object-position: center 22%; border-bottom: 1px solid #000; }
 .c-pic.contain { height: 140px; object-fit: contain; padding: 12px; background: radial-gradient(ellipse at center, #1a1410, #050403); }
+/* A historic picture: shown whole, framed, over a blurred copy of itself, with what and when underneath.
+   Small old pictures are scaled up a little, never to the full width. */
+.c-photo { position: relative; height: 230px; margin: 0; padding: 12px 12px 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid #000; background: #050403; }
+.c-photo i { position: absolute; inset: -24px; background: center / cover no-repeat; filter: blur(20px) brightness(.32) saturate(.7); }
+.c-photo img { position: relative; flex: 1 1 0; min-height: 0; margin: auto 0; max-width: 100%; object-fit: contain; filter: drop-shadow(0 0 1px #000) drop-shadow(0 6px 14px rgba(0, 0, 0, .9)); }
+.c-photo figcaption a { margin-left: 10px; color: var(--gold); text-underline-offset: 2px; }
+.c-photo figcaption a:hover { color: var(--gold-hi); }
+.c-photo figcaption { position: relative; flex: 0 0 auto; padding: 6px 0 7px; font: 11px var(--sans); letter-spacing: .1em; text-transform: uppercase; color: #b9ad8e; text-shadow: 0 1px 2px #000; }
 .c-banner { position: relative; height: 168px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #050403 center / cover no-repeat; border-bottom: 1px solid #000; }
 .c-banner.ls { background-position: center 15%; }
 .c-banner::before { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 80% at center, rgba(0, 0, 0, .5), rgba(0, 0, 0, .15) 60%, rgba(0, 0, 0, .6)); }
@@ -307,17 +318,45 @@ body.at-title #app { visibility: hidden; }
 .grid b { font: 600 25px var(--display); color: #fff; }
 .eggs { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 16px; font-size: 13px; color: var(--dim); }
 .eggs b { font: 600 15px var(--display); color: var(--unique); margin-right: 6px; }
+
+/* The menu: one narrow column, like the game's own escape menu. Volume, secrets, then the buttons stacked. */
+.modal.menu { width: min(430px, 100%); }
+.modal.menu .c-body { padding: 16px 22px 6px; }
+.vols { display: grid; gap: 12px; }
+.vol { display: grid; grid-template-columns: 64px 1fr 34px; align-items: center; gap: 12px; cursor: pointer; }
+.vol span, .sec span { font: 600 16px var(--display); letter-spacing: .08em; color: var(--bright); }
+.vol b { font: 600 15px var(--display); color: var(--gold); text-align: right; }
+.vol input { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; margin: 0; border: 1px solid #000; border-radius: 4px; outline: 1px solid var(--line); cursor: pointer;
+  background: linear-gradient(90deg, #8a6722, var(--gold-hi)) 0 / var(--v) 100% no-repeat, #0b0906; }
+.vol input:focus-visible { outline-color: var(--gold-hi); }
+.vol input::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; transform: rotate(45deg); border: 1px solid #000; background: linear-gradient(135deg, #fff3cf, #9a7426); box-shadow: 0 0 0 1px var(--bronze), 0 2px 5px #000; }
+.vol input::-moz-range-thumb { width: 13px; height: 13px; transform: rotate(45deg); border: 1px solid #000; border-radius: 0; background: linear-gradient(135deg, #fff3cf, #9a7426); box-shadow: 0 0 0 1px var(--bronze), 0 2px 5px #000; }
+.vols .by { margin: -6px 0 0 76px; font: 12px var(--sans); color: var(--dim); }
+.vols .by a { color: var(--gold); }
+.vols .by a:hover { color: var(--gold-hi); }
+.sec { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 6px 12px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--line); }
+.sec b { font: 600 15px var(--display); color: var(--gold); }
+.sec i { grid-column: 1 / -1; height: 4px; background: #0b0906; outline: 1px solid var(--line); }
+.sec u { display: block; height: 100%; min-width: 2px; background: linear-gradient(90deg, #7d3d0c, var(--unique)); }
+.modal.menu .eggs { grid-template-columns: 1fr; gap: 8px; margin-top: 12px; max-height: min(260px, 34vh); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; padding-right: 4px; line-height: 1.35; }
+.modal.menu .eggs b { display: block; margin: 0; }
+.modal.menu .c-foot { flex-direction: column; gap: 8px; padding: 16px 22px 4px; border-top: 0; }
+.modal.menu .c-foot .btn { width: 100%; padding: 8px 16px; }
+.modal.menu .c-foot .btn.sure { border-color: #c0392b; color: #ff9a8a; }
+.modal.menu .legal { margin: 10px 0 12px; }
 #tip { position: fixed; z-index: 95; max-width: 280px; background: rgba(6, 5, 4, .96); border: 1px solid var(--bronze); padding: 6px 11px; font-size: 13px; color: var(--text); pointer-events: none; display: none; box-shadow: 0 0 0 1px #000, 0 6px 20px #000; line-height: 1.35; }
 
 /* ---------- shorter and narrower windows ---------- */
 @media (max-height: 820px) and (min-width: 1101px) {
   .release-logo { height: 150px; }
+  .c-photo { height: 180px; }
   #stage.carded .release-logo { height: 60px; }
   .mark.release-logo { font-size: 112px; }
   #stage.carded .mark.release-logo { font-size: 48px; }
   .mark.banner-logo, .modal .mark.banner-logo { font-size: 76px; }
   .c-pic { height: 110px; }
   .c-pic.contain { height: 95px; }
+  .c-photo { height: 160px; }
   .c-banner { height: 116px; }
   .banner-logo { height: 108px; }
   .peak b { font-size: 44px; }

@@ -2,7 +2,7 @@
    as a card on the stage, never as a popup over the game. */
 (function () {
   'use strict';
-  var GGG = window.GGG, U = GGG.util, D = GGG.data, E = GGG.engine, A = GGG.art, Snd = GGG.audio;
+  var GGG = window.GGG, U = GGG.util, D = GGG.data, E = GGG.engine, A = GGG.art, Snd = GGG.audio, Stats = GGG.stats;
   var UI = GGG.ui = {};
   var S = null, speed = 1, paused = false, busy = false, pend = null, timer = null, modal = null;
   var logoSrc = null, titleSrc = null, bgFor = null, bgHold = null, bgLayer = 0, logoClicks = 0, logoFirst = 0, logoTimer = null, reqMsg = {}, lastFlip = '';
@@ -40,6 +40,8 @@
   function srcOf(name) { var named = skin('images'); return (named && named[name]) || found[name] || null; }
   function listed(key, src) { return (skin(key) || []).indexOf(src) !== -1; }
   function logoOf(id) { var logos = skin('releaseLogos'); return (logos && logos[id]) || null; }
+  /* A real picture from the time, for a history card. It wins over the league art for that card. */
+  function photoOf(id) { var p = skin('photos'); return (p && p[id]) || null; }
   /* Logos with a see-through background are shown as they are. The others get their dark backdrop blended away. */
   function logoImg(src, cls) {
     if (src === skin('logo')) return mark(cls);
@@ -102,7 +104,7 @@
   }
   function renderTop() {
     var f = E.finance(S), ann = !!S.flags.announced;
-    var html = '<button class="btn" data-act="brand" data-tip="Menu">&#9776;</button>' + (logoSrc ? '<img class="logo" src="' + h(logoSrc) + '" alt="">' : '');
+    var html = '<button class="btn" data-act="brand" data-tip="Menu">&#9776;</button>' + (logoSrc ? mark('logo') : '');
     html += st('', U.fmtDate(S.week), '', 'Space pauses');
     html += st(ICON.coin, U.money(S.money), '<small class="' + (f.net >= 0 ? 'up' : 'down') + '">' + (f.net >= 0 ? '+' : '') + U.money(f.net) + '</small>', 'Cash, and change per week');
     html += st(ICON.people, S.launchWeek >= 0 ? U.num(S.players) : '0', '', 'Players online');
@@ -110,7 +112,7 @@
       '<span' + (S.mood < 45 ? ' class="down"' : '') + '>' + ICON.up + '</span></span>';
     html += '<span class="spacer"></span><span class="speed" data-tip="Space pauses. Minus and plus change speed."><button class="btn' + (paused ? ' on' : '') + '" data-act="pause">&#10074;&#10074;</button>';
     [1, 2, 4].forEach(function (sp, i) { html += '<button class="btn' + (!paused && speed === sp ? ' on' : '') + '" data-act="speed" data-n="' + sp + '">' + ['&#9654;', '&#9654;&#9654;', '&#9654;&#9654;&#9654;'][i] + '</button>'; });
-    html += '<button class="btn' + (Snd.muted ? '' : ' on') + '" data-act="mute" data-tip="Sound">&#9834;</button></span>';
+    html += '<button class="btn' + (Snd.muted ? '' : ' on') + '" data-act="mute" data-tip="Sound on or off. The menu has the volume.">&#9834;</button></span>';
     $('top').innerHTML = html;
   }
 
@@ -294,7 +296,7 @@
   /* The card is built in one go, picture included, so nothing on it moves after it appears.
      A picture not looked up yet is looked up first. then() runs once the card is on screen. */
   function setCard(html, cls, pic, why, clickable, then) {
-    var seq = ++cardSeq;
+    var seq = ++cardSeq, photo = pic && photoOf(pic), cap = photo && (skin('captions') || {})[pic], from = photo && (skin('sources') || {})[pic];
     function show(src) {
       if (seq !== cardSeq) return;
       cardWait = false;
@@ -303,10 +305,14 @@
       $('stage').className = 'carded ' + (cls || '');
       $('card').innerHTML = '<div class="card ' + (cls || '') + '"' + (clickable ? ' data-act="cont"' : '') + '>' +
         (why ? '<span class="why" data-tip="' + h(why) + '">?</span>' : '') +
-        (src ? '<img class="c-pic' + (contain ? ' contain' : '') + '" src="' + h(src) + '" alt="">' : '') + html + '</div>';
+        (photo ? '<figure class="c-photo"><i style="background-image:url(' + h(encodeURI(photo)) + ')"></i><img src="' + h(photo) + '" alt="">' + (cap || from ? '<figcaption>' + h(cap || '') + (from ? '<a href="' + h(from) + '" target="_blank" rel="noopener">Source</a>' : '') + '</figcaption>' : '') + '</figure>'
+          : src ? '<img class="c-pic' + (contain ? ' contain' : '') + '" src="' + h(src) + '" alt="">' : '') + html + '</div>';
+      /* A very small old picture is shown at twice its size at most, so it stays a picture and not a blur. */
+      var im = photo && $('card').querySelector('.c-photo img');
+      if (im) { var fit = function () { im.style.maxHeight = im.naturalHeight * 2 + 'px'; }; if (im.complete && im.naturalHeight) fit(); else im.onload = fit; }
       if (then) then();
     }
-    if (!pic || srcOf(pic) || found[pic] === null) { show(pic && srcOf(pic)); return; }
+    if (photo || !pic || srcOf(pic) || found[pic] === null) { show(pic && srcOf(pic)); return; }
     cardWait = true;
     probe(pic, show, function () { show(null); });
   }
@@ -467,12 +473,13 @@
       c = D.cycles.filter(function (x) { return x.id === p.result.id; })[0];
       var r = p.result;
       E.closeLaunch(S);
+      Stats.launch(S);
       UI.save(); render();
       showLaunch(r, c);
     } else if (p.type === 'intro') {
       c = E.cycle(S);
       if (c.dilemma) {
-        showDecision({ kind: 'intro', title: c.name, text: c.dilemma.text, choices: c.dilemma.choices, canon: c.dilemma.free ? null : (c.dilemma.canon || 0) });
+        showDecision({ kind: 'intro', title: c.name, text: c.dilemma.text, choices: c.dilemma.choices, canon: c.dilemma.free ? null : (c.dilemma.canon || 0), pic: photoOf(c.id) ? c.id : null });
       } else { E.resolveIntro(S, null); UI.save(); }
       render();
     } else if (p.type === 'event') {
@@ -494,21 +501,35 @@
   function openModal(o) {
     modal = o;
     $('modal-root').innerHTML = '<div class="card modal ' + (o.cls || '') + '">' + (o.top || '') + head(o.title, o.sub) + '<div class="c-body">' + o.body + '</div><div class="c-foot">' +
-      o.buttons.map(function (b) { return '<button class="btn ' + (b.cls || '') + '" data-m="' + b.act + '">' + h(b.label) + '</button>'; }).join('') + '</div></div>';
+      o.buttons.map(function (b) { return '<button class="btn ' + (b.cls || '') + '" data-m="' + b.act + '">' + h(b.label) + '</button>'; }).join('') + '</div>' + (o.after || '') + '</div>';
     $('modal-root').className = 'open';
     blurChat();
     syncCard();
   }
   function closeModal() { $('modal-root').className = ''; $('modal-root').innerHTML = ''; modal = null; syncCard(); }
+  /* The composer of the menu theme. He has no site of his own that we could find, so this is his credits page. */
+  var MUSIC_BY = 'https://www.imdb.com/name/nm1804098/';
+  /* A volume slider. Zero reads as Off. */
+  function volRow(kind, name) {
+    var v = Snd.level(kind);
+    return '<label class="vol"><span>' + name + '</span><input type="range" min="0" max="100" step="5" value="' + v + '" data-vol="' + kind + '" style="--v:' + v + '%"><b>' + (v || 'Off') + '</b></label>';
+  }
   function showMenu() {
     var got = Object.keys(S.eggs), total = Object.keys(D.eggs).length;
     openModal({
-      title: 'Still Sane, Founder?', dismiss: true,
-      body: '<p class="picked">Secrets ' + got.length + ' / ' + total + '</p><div class="eggs">' +
-        got.map(function (id) { return '<div><b>' + h(D.eggs[id].name) + '</b>' + h(D.eggs[id].what) + '</div>'; }).join('') +
-        '</div><p class="legal">Game artwork © Grinding Gear Games. <a href="art/credits.html" target="_blank" rel="noopener">Artwork credits</a></p>',
-      buttons: [{ label: 'Start over', act: 'new' }, { label: 'Back to work', act: 'go', cls: 'gold' }],
-      onAct: function (act) { closeModal(); if (act === 'new') { store(SAVE, null); UI.title(); } }
+      title: 'Still Sane, Founder?', dismiss: true, cls: 'menu',
+      body: '<div class="vols">' + volRow('sfx', 'Sound') + (Snd.hasMusic ? volRow('music', 'Music') +
+        '<p class="by">Main Menu by <a href="' + MUSIC_BY + '" target="_blank" rel="noopener">Adgio Hutchings</a></p>' : '') + '</div>' +
+        '<div class="sec"><span>Secrets</span><b>' + got.length + ' / ' + total + '</b><i><u style="width:' + (got.length / total * 100) + '%"></u></i></div>' +
+        (got.length ? '<div class="eggs">' + got.map(function (id) { return '<div><b>' + h(D.eggs[id].name) + '</b>' + h(D.eggs[id].what) + '</div>'; }).join('') + '</div>' : ''),
+      after: '<p class="legal">Unofficial fan parody. Not affiliated with or endorsed by Grinding Gear Games.<br>Game artwork © Grinding Gear Games. <a href="art/credits.html" target="_blank" rel="noopener">Artwork credits</a></p>',
+      buttons: [{ label: 'Back to work', act: 'go', cls: 'gold' }, { label: 'Start over', act: 'new' }],
+      /* Starting over erases the save, so it asks once more on the same button. */
+      onAct: function (act, el) {
+        if (act === 'new' && el.className.indexOf('sure') < 0) { el.className += ' sure'; el.textContent = 'Erase this game?'; return; }
+        closeModal();
+        if (act === 'new') { store(SAVE, null); UI.title(); } else render();
+      }
     });
   }
   function endingTitle(e) {
@@ -520,6 +541,7 @@
   }
   function showEnding() {
     var e = E.ending(S), depth = UI.depth();
+    Stats.end(S);
     Snd.play('good');
     openModal({
       title: 'GGG Simulator', sub: endingTitle(e), cls: 'launch', top: banner('c_sim'),
@@ -599,11 +621,13 @@
   function bind() {
     document.addEventListener('pointerdown', function (ev) {
       var el = ev.target.closest ? ev.target.closest('[data-act]') : null;
+      /* A picture's source link opens its page. It does not count as a click on the card, and the game waits meanwhile. */
+      if (ev.target.closest && ev.target.closest('.c-photo a')) { if (S && !paused) { paused = true; render(); } return; }
       if (el && S && !modal && !atTitle()) { ev.preventDefault(); act(el); }
     });
     document.addEventListener('click', function (ev) {
       var m = ev.target.closest ? ev.target.closest('[data-m]') : null;
-      if (m && modal) { Snd.play('click'); modal.onAct(m.getAttribute('data-m')); return; }
+      if (m && modal) { Snd.play('click'); modal.onAct(m.getAttribute('data-m'), m); return; }
       if (modal && modal.dismiss && ev.target === $('modal-root')) { closeModal(); render(); return; }
       var el = ev.target.closest ? ev.target.closest('[data-act]') : null;
       if (el && S && !modal && ev.detail === 0) act(el); // keyboard
@@ -649,6 +673,20 @@
       if (y + tip.offsetHeight > window.innerHeight - 6) y = ev.clientY - tip.offsetHeight - 10;
       tip.style.left = x + 'px'; tip.style.top = y + 'px';
     });
+    /* Volume sliders in the menu. Letting go plays a click at the new level. */
+    document.addEventListener('input', function (ev) {
+      var kind = ev.target.getAttribute && ev.target.getAttribute('data-vol');
+      if (!kind) return;
+      Snd.setLevel(kind, ev.target.value);
+      /* The other slider can change too, when moving this one ends a mute. */
+      Array.prototype.forEach.call(ev.target.closest('.vols').querySelectorAll('.vol'), function (row) {
+        var inp = row.querySelector('input'), v = Snd.level(inp.getAttribute('data-vol'));
+        if (inp !== ev.target) inp.value = v;
+        inp.style.setProperty('--v', v + '%');
+        row.querySelector('b').textContent = v || 'Off';
+      });
+    });
+    document.addEventListener('change', function (ev) { if (ev.target.getAttribute && ev.target.getAttribute('data-vol') === 'sfx') Snd.play('click'); });
     $('chat').addEventListener('submit', function (ev) { ev.preventDefault(); if (S) chat($('chat-in').value); $('chat-in').value = ''; $('chat-in').blur(); });
     window.addEventListener('resize', function () { if (S) A.drawChart($('chart'), S); });
     E.on(function (type, data) {
@@ -686,13 +724,13 @@
   UI.save = function () { if (S) store(SAVE, JSON.stringify(S)); };
   UI.newGame = function (deeper) {
     S = E.newGame();
-    start(); UI.save();
+    start(); Stats.begin(S); UI.save();
     if (deeper || UI.depth() > 1) setTimeout(function () { E.egg(S, 'recursion'); }, 1500);
   };
   UI.resume = function () {
     try { S = JSON.parse(load(SAVE)); } catch (e) { S = null; }
     if (!S || S.v !== 1) { UI.newGame(); return; }
-    start();
+    start(); Stats.resume();
   };
   UI.title = function () {
     var saved = null, depth = UI.depth();
@@ -705,8 +743,9 @@
       '<h1>Still Sane, <span>Founder?</span></h1><div class="rule"></div>' +
       '<div class="row">' + (hasSave ? '<button class="btn gold" id="t-continue">Continue, ' + U.fmtDate(saved.week) + '</button>' : '') +
       '<button class="btn' + (hasSave ? '' : ' gold') + '" id="t-new">New game</button></div>' +
-      '<p class="legal">Unofficial fan parody. Not affiliated with Grinding Gear Games.' + (depth > 1 ? ' Simulation depth ' + depth + '.' : '') +
-      '<br>Game artwork © Grinding Gear Games. <a href="art/credits.html" target="_blank" rel="noopener">Artwork credits</a></p></div>';
+      '<p class="legal">Unofficial fan parody. Not affiliated with or endorsed by Grinding Gear Games.' + (depth > 1 ? ' Simulation depth ' + depth + '.' : '') +
+      '<br>Game artwork © Grinding Gear Games. <a href="art/credits.html" target="_blank" rel="noopener">Artwork credits</a>' +
+      '<br>Music: Main Menu — Adgio Hutchings (2013). <a href="audio/credits.html" target="_blank" rel="noopener">Music credits</a></p></div>';
     A.embers($('title').firstChild, 70);
     $('t-new').onclick = function () { Snd.play('click'); UI.newGame(); };
     if (hasSave) $('t-continue').onclick = function () { Snd.play('click'); UI.resume(); };
@@ -717,6 +756,7 @@
     applySkin();
     UI.title();
     loop();
+    Stats.visit();
   };
   UI.state = function () { return S; };
   /* For testing from the console: answer whatever is on screen, then advance one tick. */

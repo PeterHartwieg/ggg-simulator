@@ -1,12 +1,19 @@
-// Hosting on Cloudflare Workers as static assets. There is no Worker script and no build step:
+// Hosting on Cloudflare Workers. The site is static files with no build step:
 // `npx wrangler deploy` uploads this folder, minus everything listed in .assetsignore.
+// The one script, worker/stats.js, only answers /api/ and writes anonymous play statistics to D1.
 {
   "name": "ggg-simulator",
+  "main": "worker/stats.js",
   "compatibility_date": "2026-11-01",
   "assets": {
     "directory": ".",
+    "binding": "ASSETS",
     "not_found_handling": "404-page"
   },
+  // Play statistics. Read them with: npx wrangler d1 execute ggg-simulator-stats --remote --file tools/stats.sql
+  "d1_databases": [
+    { "binding": "DB", "database_name": "ggg-simulator-stats" }
+  ],
   // Custom domains: wrangler creates the DNS records and certificates in the zone.
   "routes": [
     { "pattern": "ggg-simulator.com", "custom_domain": true },

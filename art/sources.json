@@ -840,6 +840,196 @@
       "sourcePage": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/4186652357039628276",
       "kind": "scene",
       "sha256": "56b97c2f2bdfecc458b1a44ccaced6be7800f7eb12a9d9e2e120db8e9f2d8909"
+    },
+    "h_c_proto": {
+      "file": "art/history/c_proto.webp",
+      "title": "The oldest surviving Path of Exile screenshot: a cube character on a grass field in a window titled Grinding Gears' Game.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/chris/old/1.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/445682",
+      "kind": "photo",
+      "caption": "The first build, early 2007"
+    },
+    "h_e_brian": {
+      "file": "art/history/e_brian.webp",
+      "title": "Brian Weissman playing an action RPG demo at PAX Prime 2010 in Seattle.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.archive.org/web/20110514052243im_/http://www.grindinggear.com/dev_diary_pax/4.jpg",
+      "sourcePage": "https://web.archive.org/web/20110514052243/http://pathofexile.com/news/2011-03-01/dev-diary-pax",
+      "kind": "photo",
+      "caption": "Brian Weissman at PAX, 2010"
+    },
+    "h_c_alpha": {
+      "file": "art/history/c_alpha.webp",
+      "title": "The game interface in mid 2010 with the inventory open, close to the first alpha builds.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/chris/old/11.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/445682",
+      "kind": "photo",
+      "caption": "The alpha interface, mid 2010"
+    },
+    "h_e_announce": {
+      "file": "art/history/e_announce.webp",
+      "title": "The rare monster screenshot GGG sent to journalists for the 2010 announcement.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/chris/old/13.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/445682",
+      "kind": "photo",
+      "caption": "The announcement screenshot, 2010"
+    },
+    "h_e_orbs": {
+      "file": "art/history/e_orbs.webp",
+      "title": "Early currency items stacked in an alpha inventory, from the dev diary on dropping gold.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.archive.org/web/20110211151131im_/http://www.grindinggear.com/devdiary_currency/gold2.png",
+      "sourcePage": "https://web.archive.org/web/20110211151131/http://pathofexile.com:80/news/2011-02-08/dev-diary-currency",
+      "kind": "photo",
+      "caption": "Currency in the alpha, February 2011"
+    },
+    "h_c_cb": {
+      "file": "art/history/c_cb.webp",
+      "title": "Closed beta DVDs that GGG handed out at PAX Prime 2011.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.archive.org/web/20120114175922im_/http://www.grindinggear.com/dev_diary_pax2011/dvds.jpg",
+      "sourcePage": "https://web.archive.org/web/20110924123832/http://www.pathofexile.com/news/2011-09-05/dev-diary-pax2011",
+      "kind": "photo",
+      "caption": "Closed beta DVDs at PAX, 2011"
+    },
+    "h_e_packs": {
+      "file": "art/history/e_packs.webp",
+      "title": "The Kiwi supporter pack from the 2012 shop: a kiwi pet, points and a beta key.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.archive.org/web/20120512154002im_/https://www.pathofexile.com/image/shop/content-kiwipack.png",
+      "sourcePage": "https://web.archive.org/web/20120512154002/https://www.pathofexile.com/purchase",
+      "kind": "photo",
+      "caption": "The Kiwi supporter pack, 2012"
+    },
+    "h_c_ob": {
+      "file": "art/history/c_ob.webp",
+      "title": "Chris Wilson and Jonathan Rogers with Rhys Abraham and Max and Erich Schaefer on a street at GDC 2013.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/chris/GGGandTheSchaefers2.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/307190",
+      "kind": "photo",
+      "caption": "Chris Wilson and Jonathan Rogers, GDC 2013"
+    },
+    "h_c_anarchy": {
+      "file": "art/history/c_anarchy.webp",
+      "title": "The character creation screen offering the Standard, Anarchy and Onslaught leagues.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/chris/leagues.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/400347",
+      "kind": "photo",
+      "caption": "Choosing a challenge league, 2013"
+    },
+    "h_c_release": {
+      "file": "art/history/c_release.webp",
+      "title": "Chris Wilson in a Hawaiian shirt at the staff party Jonathan hosted after the 1.0 release.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/news/2017-10-24/ChrisHorrorReef.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/2392544",
+      "kind": "photo",
+      "caption": "Chris in the Hawaiian shirt, late 2013"
+    },
+    "h_e_henderson": {
+      "file": "art/history/e_henderson.webp",
+      "title": "Staff at their desks in GGG's upstairs office in Henderson.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/news/2022-10-06/Office/1.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/3316898",
+      "kind": "photo",
+      "caption": "The Henderson office, 2022"
+    },
+    "h_e_cats": {
+      "file": "art/history/e_cats.webp",
+      "title": "Black cats swarming the Act 2 desert after the April Fools patch.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/news/01-04-2015/cats.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/1233642",
+      "kind": "photo",
+      "caption": "The cats patch, April 2015"
+    },
+    "h_e_xbox": {
+      "file": "art/history/e_xbox.webp",
+      "title": "A gameplay screenshot from the Xbox One announcement, with the controller interface.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/news/19-01-2016/Screenshot1.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/1821330",
+      "kind": "photo",
+      "caption": "Path of Exile on Xbox One, 2017"
+    },
+    "h_e_exilecon19": {
+      "file": "art/history/e_exilecon19.webp",
+      "title": "The ExileCon 2019 keynote audience facing a screen with the Path of Exile 2 logos.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/news/2019-11-19/0H9A8575.JPG",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/2679082",
+      "kind": "photo",
+      "caption": "Path of Exile 2 revealed, ExileCon 2019"
+    },
+    "h_e_exilecon23": {
+      "file": "art/history/e_exilecon23.webp",
+      "title": "A presenter alone on the dark keynote stage at ExileCon 2023 in Auckland.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/news/2023-08-01/KeynoteChris.png",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/3408264",
+      "kind": "photo",
+      "caption": "The ExileCon 2023 keynote"
+    },
+    "h_c_con26": {
+      "file": "art/history/c_con26.webp",
+      "title": "Five people in armchairs on the ExileCon 2026 stage for the founders roundtable.",
+      "creator": "Grinding Gear Games",
+      "source": "https://i.ytimg.com/vi/2UNC9EkMWHY/maxresdefault.jpg",
+      "sourcePage": "https://www.youtube.com/watch?v=2UNC9EkMWHY",
+      "kind": "photo",
+      "caption": "The founders roundtable, ExileCon 2026"
+    },
+    "h_e_erik": {
+      "file": "art/history/e_erik.webp",
+      "title": "Erik Olofsson, seen from behind, playing Torchlight 2 at PAX Prime 2010 while Travis Baldree watches.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.archive.org/web/20110514052243im_/http://www.grindinggear.com/dev_diary_pax/5.jpg",
+      "sourcePage": "https://web.archive.org/web/20110514052243/http://pathofexile.com/news/2011-03-01/dev-diary-pax",
+      "kind": "photo",
+      "caption": "Erik Olofsson at PAX, 2010"
+    },
+    "h_e_gems": {
+      "file": "art/history/e_gems.webp",
+      "title": "A sword with linked red, green and yellow sockets, from the 2010 website's skills page.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.archive.org/web/20100906082704im_/http://pathofexile.com/image/gems/swordconnections.png",
+      "sourcePage": "https://web.archive.org/web/20100906082704/http://pathofexile.com/world/skills",
+      "kind": "photo",
+      "caption": "Linked sockets on a sword, 2010"
+    },
+    "h_e_d3": {
+      "file": "art/history/e_d3.webp",
+      "title": "Chris Wilson with Diablo III director Jay Wilson at a party during GDC 2013.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/chris/ChrisWilsonandJayWilson.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/307190",
+      "kind": "photo",
+      "caption": "Chris Wilson and Jay Wilson, GDC 2013"
+    },
+    "h_e_phones": {
+      "file": "art/history/e_phones.webp",
+      "title": "The BlizzCon 2018 opening ceremony broadcast to an audience in the church of San Romano in Lucca, Italy.",
+      "creator": "Syrio",
+      "licence": "CC BY-SA 4.0",
+      "source": "https://upload.wikimedia.org/wikipedia/commons/8/84/BlizzCon_2018_Opening%2C_broadcast_at_Lucca_Comics_%26_Games_02.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:BlizzCon_2018_Opening,_broadcast_at_Lucca_Comics_%26_Games_02.jpg",
+      "kind": "photo",
+      "caption": "BlizzCon 2018 opening, screened in Lucca"
+    },
+    "h_e_gamescom": {
+      "file": "art/history/e_gamescom.webp",
+      "title": "Players at rows of demo stations on the Path of Exile 2 booth at gamescom 2026 in Cologne.",
+      "creator": "Grinding Gear Games",
+      "source": "https://web.poecdn.com/public/news/2026-09-07/Booth_1.jpg",
+      "sourcePage": "https://www.pathofexile.com/forum/view-thread/4002197",
+      "kind": "photo",
+      "caption": "The Path of Exile 2 booth, gamescom 2026"
     }
   },
   "background": "affliction",
@@ -983,5 +1173,28 @@
     "c_anarchy": "logo-poe",
     "c_release": "logo-poe",
     "c_prophecy": "logo-poe"
+  },
+  "photos": {
+    "c_proto": "h_c_proto",
+    "e_brian": "h_e_brian",
+    "c_alpha": "h_c_alpha",
+    "e_announce": "h_e_announce",
+    "e_orbs": "h_e_orbs",
+    "c_cb": "h_c_cb",
+    "e_packs": "h_e_packs",
+    "c_ob": "h_c_ob",
+    "c_anarchy": "h_c_anarchy",
+    "c_release": "h_c_release",
+    "e_henderson": "h_e_henderson",
+    "e_cats": "h_e_cats",
+    "e_xbox": "h_e_xbox",
+    "e_exilecon19": "h_e_exilecon19",
+    "e_exilecon23": "h_e_exilecon23",
+    "c_con26": "h_c_con26",
+    "e_erik": "h_e_erik",
+    "e_gems": "h_e_gems",
+    "e_d3": "h_e_d3",
+    "e_phones": "h_e_phones",
+    "e_gamescom": "h_e_gamescom"
   }
 }
