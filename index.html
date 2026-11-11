@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Still Sane, Founder? An unofficial GGG simulator</title>
+<meta name="description" content="A fan-made parody management game about twenty years of running an action RPG studio. Not affiliated with Grinding Gear Games.">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600&display=swap">
+</head>
+<body>
+
+<canvas id="tree" aria-hidden="true"></canvas>
+
+<div id="app">
+  <header id="top"></header>
+  <main id="main">
+    <section id="stage">
+      <div id="stage-bg"></div>
+      <canvas id="chart" aria-hidden="true"></canvas>
+      <div id="rel"></div>
+      <div id="card" aria-live="polite"></div>
+      <div id="drops" aria-live="polite"></div>
+    </section>
+    <aside id="side">
+      <h2>r/pathofexile</h2>
+      <div id="reqs"></div>
+      <div id="feed"></div>
+      <form id="chat" autocomplete="off">
+        <input id="chat-in" maxlength="60" placeholder="/" aria-label="Global chat">
+      </form>
+    </aside>
+  </main>
+  <footer id="hud"></footer>
+</div>
+
+<div id="title"></div>
+<div id="modal-root" role="dialog" aria-modal="true"></div>
+<div id="tip"></div>
+
+<script src="js/util.js"></script>
+<script src="js/data/tune.js"></script>
+<script src="js/data/cycles.js"></script>
+<script src="js/data/events.js"></script>
+<script src="js/data/randoms.js"></script>
+<script src="js/data/requests.js"></script>
+<script src="js/data/feed.js"></script>
+<script src="js/data/eggs.js"></script>
+<script src="art/manifest.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/art.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
