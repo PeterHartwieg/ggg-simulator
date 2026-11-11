@@ -41,7 +41,15 @@
   function listed(key, src) { return (skin(key) || []).indexOf(src) !== -1; }
   function logoOf(id) { var logos = skin('releaseLogos'); return (logos && logos[id]) || null; }
   /* Logos with a see-through background are shown as they are. The others get their dark backdrop blended away. */
-  function logoImg(src, cls) { return '<img class="' + cls + (listed('transparentLogos', src) ? ' clear' : ' solid') + '" src="' + h(src) + '" alt="">'; }
+  function logoImg(src, cls) {
+    if (src === skin('logo')) return mark(cls);
+    return '<img class="' + cls + (listed('transparentLogos', src) ? ' clear' : ' solid') + '" src="' + h(src) + '" alt="">';
+  }
+  /* The game's own mark: the studio logo with a SIMULATOR plate bolted across the bottom of the gears. */
+  function mark(cls) {
+    var src = logoSrc || skin('logo');
+    return src ? '<span class="mark ' + (cls || '') + '"><img src="' + h(src) + '" alt="Grinding Gear Games"><b><i>Simulator</i></b></span>' : '';
+  }
   /* Two layers, so one scene fades into the next. Loading screens are cropped above their loading bar. */
   function setScene(id) {
     if (bgFor === id) return;
@@ -693,7 +701,7 @@
     leaveGame();
     document.body.className = 'at-title';
     $('title').className = '';
-    $('title').innerHTML = '<canvas aria-hidden="true"></canvas><div class="title-box">' + (logoSrc ? '<img src="' + h(logoSrc) + '" alt="Grinding Gear Games">' : '') +
+    $('title').innerHTML = '<canvas aria-hidden="true"></canvas><div class="title-box">' + mark('title-mark') +
       '<h1>Still Sane, <span>Founder?</span></h1><div class="rule"></div>' +
       '<div class="row">' + (hasSave ? '<button class="btn gold" id="t-continue">Continue, ' + U.fmtDate(saved.week) + '</button>' : '') +
       '<button class="btn' + (hasSave ? '' : ' gold') + '" id="t-new">New game</button></div>' +
