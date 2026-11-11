@@ -376,21 +376,7 @@
       E.DEPTS.forEach(function (d) { S.staff[d] = Math.round(S.staff[d] * (1 + fx.staffPct)); });
       chip('+' + Math.round(fx.staffPct * 100) + '% staff', true);
     } else if (fx.staffPct < 0) {
-      /* Cut on the whole studio, so a small team still loses someone. Each department
-         keeps its share, and there is always one coder and one designer left. */
-      var before = E.headcount(S), cut = Math.max(1, before - Math.round(before * (1 + fx.staffPct))), gone = 0;
-      var keep = {}, aim = {};
-      E.DEPTS.forEach(function (d) { keep[d] = (d === 'code' || d === 'design') ? 1 : 0; aim[d] = (S.staff[d] || 0) * (1 + fx.staffPct); });
-      while (gone < cut) {
-        var pick = null, over = -1e9;
-        E.DEPTS.forEach(function (d) {
-          if ((S.staff[d] || 0) <= keep[d]) return;
-          var o = S.staff[d] - aim[d];
-          if (o > over) { over = o; pick = d; }
-        });
-        if (!pick) break;
-        S.staff[pick]--; gone++;
-      }
+      var gone = cutStaff(S, -fx.staffPct);
       if (gone) chip('-' + gone + ' staff', false);
     }
     if (fx.flags) Object.keys(fx.flags).forEach(function (k) { S.flags[k] = fx.flags[k]; });
@@ -425,6 +411,45 @@
     if (fx.post) [].concat(fx.post).forEach(function (p) { E.post(S, p); });
     if (fx.fn) fx.fn(S, chip);
     return chips;
+  };
+  /* Let go a share of the whole studio, so a small team still loses someone. The largest
+     departments go first, in proportion, and one coder and one designer always stay. */
+  var KEEP = { code: 1, design: 1 };
+  E.removable = function (S) {
+    var n = 0;
+    E.DEPTS.forEach(function (d) { n += Math.max(0, (S.staff[d] || 0) - (KEEP[d] || 0)); });
+    return n;
+  };
+  function cutStaff(S, frac) {
+    var before = E.headcount(S), cut = Math.max(1, before - Math.round(before * (1 - frac))), gone = 0, aim = {};
+    E.DEPTS.forEach(function (d) { aim[d] = (S.staff[d] || 0) * (1 - frac); });
+    while (gone < cut) {
+      var pick = null, over = -1e9;
+      E.DEPTS.forEach(function (d) {
+        if ((S.staff[d] || 0) <= (KEEP[d] || 0)) return;
+        var o = S.staff[d] - aim[d];
+        if (o > over) { over = o; pick = d; }
+      });
+      if (!pick) break;
+      S.staff[pick]--; gone++;
+    }
+    return gone;
+  }
+  /* The layoff button: shown while the studio is bigger than the real one or the account is empty. */
+  E.layoffShown = function (S) { return E.headcount(S) > E.parHeadcount(S.week) * 1.1 || S.money < 0; };
+  E.canLayoff = function (S) { return E.removable(S) > 0; };
+  E.layoff = function (S) {
+    if (!E.canLayoff(S)) return null;
+    var gone = cutStaff(S, 0.1), chips = [{ text: '-' + gone + ' staff', good: false }];
+    S.sanity = U.clamp(S.sanity - 12, 0, 100);
+    chips.push({ text: 'Sanity -12', good: false });
+    if (S.flags.announced) {
+      S.mood = U.clamp(S.mood - 6, 0, 100);
+      chips.push({ text: 'Reddit -6', good: false });
+      E.post(S, { t: gone === 1 ? 'GGG let a developer go today' : 'GGG let {n} developers go today', f: 'Discussion', c: 'who fixes desync now', hot: true }, { n: gone });
+    }
+    S.tot.layoffs = (S.tot.layoffs || 0) + gone;
+    return { gone: gone, chips: chips };
   };
   function pct(mult) { var p = Math.round((mult - 1) * 100); return (p > 0 ? '+' : '') + p + '%'; }
   function signPct(frac) { var p = Math.round(frac * 100); return (p > 0 ? '+' : '') + p + '%'; }

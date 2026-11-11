@@ -78,8 +78,17 @@
     crunch: '<svg viewBox="0 0 24 24"><path d="M12.5 1.5c1 4-3.5 5.5-3.5 9 0 1 .5 2 1.2 2.5C9.7 10.5 12 9.5 12.5 8c2.5 2.5 4.5 5 4.5 8.3 0 3.2-2.3 5.7-5.2 5.7S6.5 19.7 6.5 16.5c0-1.8.7-3.3 1.6-4.4C6.8 8.5 10.5 6.5 12.5 1.5z"/></svg>',
     market: '<svg viewBox="0 0 24 24"><path d="M3 9.5v5h3.5l7 5V4.5l-7 5z"/><path d="M16.5 8.5c1.5 1 1.5 6 0 7M19 5.5c3.5 2.5 3.5 10.5 0 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
     vaal: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3.5l-2.5 5 4 3-3.5 4 2 5" fill="none" stroke="#120303" stroke-width="1.8" stroke-linejoin="round"/></svg>',
-    desync: '<svg viewBox="0 0 24 24"><g opacity=".4"><circle cx="8" cy="7" r="3.2"/><path d="M2.5 21c0-4.5 2.4-7 5.5-7s5.5 2.5 5.5 7z"/></g><circle cx="15.5" cy="7" r="3.2"/><path d="M10 21c0-4.5 2.4-7 5.5-7s5.5 2.5 5.5 7z"/></svg>'
+    desync: '<svg viewBox="0 0 24 24"><g opacity=".4"><circle cx="8" cy="7" r="3.2"/><path d="M2.5 21c0-4.5 2.4-7 5.5-7s5.5 2.5 5.5 7z"/></g><circle cx="15.5" cy="7" r="3.2"/><path d="M10 21c0-4.5 2.4-7 5.5-7s5.5 2.5 5.5 7z"/></svg>',
+    /* The desk in a box, with the office plant sticking out. */
+    layoff: '<svg viewBox="0 0 24 24"><path d="M12 12.5V6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 8.2c-3 0-4.6-1.9-4.6-4.2 3 0 4.6 1.9 4.6 4.2zM12 10c2.8 0 4.3-1.8 4.3-3.9-2.8 0-4.3 1.8-4.3 3.9z"/>' +
+      '<path d="M4 12.5h16l-1.6 9H5.6z"/><path d="M4 12.5L1.6 9.3h6.2l1.2 3.2zM20 12.5l2.4-3.2h-6.2L15 12.5z" opacity=".7"/></svg>'
   };
+  /* The sanity globe's face. It smiles when the team is fine and frowns when it is not. */
+  function face(v) {
+    var k = Math.round((v - 50) / 50 * 35) / 10;
+    return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.4"/><circle cx="15" cy="10" r="1.4"/>' +
+      '<path d="M8 15.5q4 ' + k + ' 8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  }
   function st(icon, value, extra, tip) {
     return '<span class="st" data-tip="' + h(tip) + '">' + (icon || '') + '<b>' + value + '</b>' + (extra || '') + '</span>';
   }
@@ -115,17 +124,45 @@
 
   /* ---------- the HUD ---------- */
 
-  function globe(cls, v, tip) {
-    return '<div class="globe ' + cls + '" data-tip="' + h(tip) + '"><div class="orb"><i style="height:' + Math.round(v) + '%"></i><span>' + Math.round(v) + '</span></div></div>';
+  function globe(cls, v, tip, icon) {
+    return '<div class="globe ' + cls + '" data-tip="' + h(tip) + '"><div class="orb"><i style="height:' + Math.round(v) + '%"></i><span>' + Math.round(v) + '</span>' +
+      '<em class="gi">' + icon + '</em></div></div>';
   }
-  var KEYS = { hire: 'Q', crunch: 'W', market: 'E', vaal: 'R', desync: 'T' };
+  /* The HUD is rebuilt every tick. A one-shot effect remembers when it started, and each
+     rebuild resumes its animation at that point with a negative delay. */
+  var fxAt = {}, quietSeen = false, drainFx = null, preview = null;
+  function fxStyle(key, name, ms) {
+    var t = fxAt[key];
+    if (t == null) return '';
+    var gone = Date.now() - t;
+    if (gone >= ms) { delete fxAt[key]; return ''; }
+    return 'animation:' + name + ' ' + ms + 'ms ease-out ' + (-gone) + 'ms both;';
+  }
+  /* Something on the HUD glows the first time it becomes available in this game, and never again. */
+  function firstSeen(key) {
+    var seen = (S.ui || (S.ui = {})).seen || (S.ui.seen = {});
+    if (seen[key]) return;
+    seen[key] = 1;
+    if (!quietSeen) fxAt['glow:' + key] = Date.now();
+  }
+  var KEYS = { hire: 'Q', crunch: 'W', market: 'E', vaal: 'R', desync: 'T', layoff: 'A' };
   function skill(act, cls, name, sub, tip, off) {
-    return '<button class="skill s-' + act + ' ' + cls + '" data-act="' + act + '" data-tip="' + h(tip) + '"' + (off ? ' disabled' : '') + '><kbd>' + KEYS[act] + '</kbd>' +
+    firstSeen(act);
+    var fx = fxStyle('glow:' + act, 'firstglow', 1800);
+    return '<button class="skill s-' + act + ' ' + cls + '" data-act="' + act + '" data-tip="' + h(tip) + '"' + (off ? ' disabled' : '') + (fx ? ' style="' + fx + '"' : '') + '><kbd>' + KEYS[act] + '</kbd>' +
       ICON[act] + '<b>' + name + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</button>';
+  }
+  function vialH(frac) { return U.clamp(frac / 1.2 * 100, 0, 100); }
+  /* The request whose build button is under the pointer or has focus, if the player can afford it. */
+  function previewCost() {
+    if (!preview) return 0;
+    var r = D.requests.filter(function (x) { return x.id === preview; })[0], t = S.cyc.target.content;
+    if (!r || r.kind === 'click' || !t || E.bankedHours(S) < r.hours || E.openRequests(S).indexOf(r) < 0) return 0;
+    return r.hours / E.HOURS / t;
   }
   function renderHud() {
     var pr = E.projection(S), ann = !!S.flags.announced, heads = E.headcount(S), real = Math.round(E.parHeadcount(S.week));
-    var html = globe('life', S.sanity, 'Team sanity. Crunch drains it.');
+    var html = globe('life', S.sanity, 'Team sanity. Crunch drains it.', face(S.sanity));
 
     var can = E.canHire(S), full = heads >= E.capacity(S), next = E.nextOffice(S), n = Math.min(5, Math.max(1, can));
     var blocked = S.hiresLeft <= 0 || S.money < E.hireCost(S, 1) || (full && (!next || S.money < next.cost));
@@ -138,16 +175,25 @@
     if (S.flags.vaal) html += skill('vaal', '', 'Vaal', '', 'Corrupt this release. Better, bricked, or nothing.', !!S.cyc.vaaled);
     var ds = S.req.desync, dq = D.requests[0];
     if (S.week >= dq._from && !(ds && ds.built != null)) html += skill('desync', '', 'Desync', ds && ds.clicks ? String(ds.clicks) : '', 'Fix desync. Keep pressing.');
+    if (E.layoffShown(S)) html += skill('layoff', '', 'Layoff', '', 'Let a tenth of the studio go', !E.canLayoff(S));
     html += '</div><div class="belt">';
     E.STREAMS.forEach(function (s, si) {
-      var open = E.streamOpen(S, s), p = pr[s], now = open && p ? p.now : 0, proj = open && p ? p.proj : 0;
-      html += '<div class="flask f-' + s + (open ? '' : ' locked') + (open && proj < 0.7 ? ' low' : '') + '" data-tip="' + h(D.streams[s].what + (open ? ' On course for ' + pc(proj) + '.' : '')) + '">' +
-        '<kbd>' + (si + 1) + '</kbd><div class="vial"><i class="proj" style="height:' + Math.min(100, proj / 1.2 * 100) + '%"></i><i class="now" style="height:' + Math.min(100, now / 1.2 * 100) + '%"></i><em></em></div>' +
+      var open = E.streamOpen(S, s), p = pr[s], now = open && p ? p.now : 0, proj = open && p ? p.proj : 0, extra = '';
+      if (open) firstSeen('f-' + s);
+      if (s === 'content' && open) {
+        var cost = previewCost();
+        if (cost) extra += '<i class="cost" style="bottom:' + vialH(now - cost) + '%;height:' + (vialH(now) - vialH(now - cost)) + '%"></i>';
+        var dr = drainFx && fxStyle('drain', 'spill', 900);
+        if (dr) extra += '<i class="drained" style="bottom:' + drainFx.to + '%;height:' + Math.max(0, drainFx.from - drainFx.to) + '%;' + dr + '"></i>';
+      }
+      var glow = fxStyle('glow:f-' + s, 'firstglow', 1800), give = fxStyle('pip:' + s, 'gave', 650);
+      html += '<div class="flask f-' + s + (open ? '' : ' locked') + (open && proj < 0.7 ? ' low' : '') + '" data-tip="' + h(D.streams[s].what + (open ? ' On course for ' + pc(proj) + '.' : '')) + '"' + (glow ? ' style="' + glow + '"' : '') + '>' +
+        '<kbd>' + (si + 1) + '</kbd><div class="vial"' + (give ? ' style="' + give + '"' : '') + '><i class="proj" style="height:' + vialH(proj) + '%"></i><i class="now" style="height:' + vialH(now) + '%"></i>' + extra + '<em></em></div>' +
         '<small>' + FLASK[s] + '</small>' +
         '<div class="ctl"><button class="btn" data-act="pip" data-s="' + s + '" data-n="-1"' + (!open || S.alloc[s] <= 0 ? ' disabled' : '') + '>&minus;</button><span>' + S.alloc[s] + '</span>' +
         '<button class="btn" data-act="pip" data-s="' + s + '" data-n="1"' + (!open ? ' disabled' : '') + '>+</button></div></div>';
     });
-    html += '</div>' + globe('mana', ann ? S.hype : 0, 'Hype for the next launch');
+    html += '</div>' + globe('mana', ann ? S.hype : 0, 'Hype for the next launch', ICON.market);
     html += '<div class="xp" data-tip="Time until this release ships"><i style="width:' + (pr.elapsed * 100).toFixed(1) + '%"></i></div>';
     $('hud').innerHTML = html;
   }
@@ -158,9 +204,17 @@
     return '<div class="post' + (p.hot ? ' hot' : '') + '"><div class="up">' + U.short(p.up) + '</div><div><div class="t">' + h(p.t) + '</div>' +
       (p.c && p.hot ? '<div class="c' + (p.g ? ' gg' : '') + '">' + h(p.c) + '</div>' : '') + '</div></div>';
   }
+  var reqSig = '';
   function renderReqs() {
     var open = E.openRequests(S).filter(function (r) { return r.id !== 'desync'; })
-      .sort(function (a, b) { return E.requestVotes(S, b) - E.requestVotes(S, a); }).slice(0, 2), html = '';
+      .sort(function (a, b) { return E.requestVotes(S, b) - E.requestVotes(S, a); }).slice(0, 2), html = '', box = $('reqs');
+    /* Only the vote counts change from tick to tick. Updating them in place keeps hover and focus on the buttons. */
+    var sig = open.map(function (r) { return r.id + (r.kind === 'click' || E.bankedHours(S) >= r.hours ? '+' : '-') + (reqMsg[r.id] || ''); }).join('|');
+    if (sig === reqSig && box.children.length === open.length) {
+      open.forEach(function (r, i) { box.children[i].firstChild.textContent = U.short(E.requestVotes(S, r)); });
+      return;
+    }
+    reqSig = sig;
     open.forEach(function (r) {
       var click = r.kind === 'click', ok = click || E.bankedHours(S) >= r.hours;
       html += '<div class="post req hot" data-tip="' + h(r.what + (click ? '' : ' Costs ' + U.num(r.hours) + ' hours of the current release.')) + '"><div class="up">' + U.short(E.requestVotes(S, r)) + '</div>' +
@@ -263,6 +317,7 @@
   function leaveGame() {
     clearCard(); clearTimeout(fadeTimer); clearTimeout(logoTimer);
     cardSeq++; cardWait = false; pend = null; busy = false; logoClicks = 0;
+    held = []; fxAt = {}; drainFx = null; preview = null; reqSig = '';
   }
   function timerBar(ms) { return '<div class="c-timer"><i style="animation-duration:' + ms + 'ms"></i></div>'; }
   function hold(ms) { busy = true; armCard(release, ms); }
@@ -279,13 +334,24 @@
       clearTimeout(fadeTimer);
       fadeTimer = setTimeout(function () { if ($('card').firstChild === c) { $('card').innerHTML = ''; $('stage').className = ''; } }, 7000);
     }
+    if (held.length && S) held.shift()();
   }
   function readTime(text) { return U.clamp(2200 + String(text).length * 40, 3500, 12000); }
 
+  /* Every overrule line that fits the year comes up once before any of them repeats, per game. */
   function flipLine() {
-    var y = U.yearOf(S.week), pool = D.text.flips.filter(function (f) { return typeof f === 'string' || (y >= f.y[0] && y < f.y[1]); });
-    var named = pool.filter(function (f) { return typeof f !== 'string'; }), pick;
-    do { pick = U.pick(named.length && Math.random() < 0.6 ? named : pool); pick = typeof pick === 'string' ? pick : pick.t; } while (pick === lastFlip && pool.length > 1);
+    var y = U.yearOf(S.week), ui = S.ui || (S.ui = {}), used = ui.flips || (ui.flips = []);
+    function text(f) { return typeof f === 'string' ? f : f.t; }
+    var pool = D.text.flips.filter(function (f) { return typeof f === 'string' || (y >= f.y[0] && y < f.y[1]); });
+    var left = pool.filter(function (f) { return used.indexOf(text(f)) < 0; });
+    if (!left.length) {
+      ui.flips = used = used.filter(function (t) { return !pool.some(function (f) { return text(f) === t; }); });
+      left = pool.filter(function (f) { return text(f) !== lastFlip; });
+      if (!left.length) left = pool;
+    }
+    var named = left.filter(function (f) { return typeof f !== 'string'; });
+    var pick = text(U.pick(named.length && Math.random() < 0.6 ? named : left));
+    used.push(pick);
     lastFlip = pick;
     return pick;
   }
@@ -336,16 +402,30 @@
     showOutcome({ title: title, pic: pic, out: { text: res.text, chips: res.chips, reality: res.reality } });
     render();
   }
+  /* A result the player caused. If a card is open, it waits and gets its own card when that one closes. */
+  var held = [];
+  function result(kicker, title, res, pic) {
+    if (!busy) showInfo(kicker, title, res, pic);
+    else held.push(function () { showInfo(kicker, title, res, pic); });
+  }
 
+  /* The critics' score in half stars. The tier thresholds sit on whole stars:
+     disaster 1, bad 2, mixed 3, good 4, great and legend 5. */
+  function stars(q) {
+    if (!(q >= 0.5)) return 1;
+    return Math.min(5, Math.floor(U.curve([[0.5, 2], [0.7, 3], [0.86, 4], [1.02, 5]], q) * 2 + 1e-9) / 2);
+  }
   function showLaunch(r, c) {
     var body = '', chips = [];
     if (r.online) {
       var max = Math.max(r.peak, r.realPeak) * 1.08;
-      body += '<div class="peak"><b id="l-peak">0</b>' + (r.est ? '' : '<small>real ' + U.num(r.realPeak) + '</small>') + '</div>' +
+      body += '<div class="peak"><b id="l-peak">' + U.num(Math.round(r.peak / 2)) + '</b>' + (r.est ? '' : '<small>real ' + U.num(r.realPeak) + '</small>') + '</div>' +
         (r.est ? '' : '<div class="vs"><i id="l-bar" style="width:0%"></i><em style="left:' + (r.realPeak / max * 100) + '%"></em></div>');
     }
     var verdict = r.online ? E.TIER_NAME[r.tier] : r.kind === 'con' ? (r.quality >= 0.9 ? 'Standing ovation' : 'Polite applause') : r.kind === 'sim' ? 'It runs' : (r.quality >= 0.9 ? 'It works' : 'It mostly works');
-    body += '<div class="verdict t-' + r.tier + '">' + verdict + '</div>';
+    var score = stars(r.quality);
+    body += '<div class="stars' + (r.tier === 'legend' ? ' legend' : '') + '" role="img" aria-label="' + score + ' / 5"><i style="width:' + (score / 5 * 100) + '%"></i></div>' +
+      '<div class="verdict t-' + r.tier + '">' + verdict + '</div>';
     if (r.crash) chips.push({ text: 'Servers crashed', good: false }); else if (r.queue) chips.push({ text: 'Queue position ' + U.num(Math.round(r.peak * 0.37)), good: null });
     if (r.bugs) chips.push({ text: r.bugs + (r.bugs === 1 ? ' bug' : ' bugs'), good: false });
     if (r.online && S.flags.announced) chips.push({ text: 'Reddit ' + (r.moodDelta >= 0 ? '+' : '') + r.moodDelta, good: r.moodDelta >= 0 });
@@ -363,7 +443,7 @@
       (function count(now) {
         var el = $('l-peak'), k = Math.min(1, (now - t0) / 1200);
         if (!el) return;
-        el.textContent = U.num(Math.round(r.peak * (1 - Math.pow(1 - k, 3))));
+        el.textContent = U.num(Math.round(r.peak * (0.5 + 0.5 * (1 - Math.pow(1 - k, 3)))));
         if (k < 1) requestAnimationFrame(count);
       })(t0);
       setTimeout(function () { if ($('l-bar')) $('l-bar').style.width = (r.peak / (Math.max(r.peak, r.realPeak) * 1.08) * 100) + '%'; if ($('l-peak')) $('l-peak').textContent = U.num(r.peak); }, 1300);
@@ -482,18 +562,27 @@
       var before = S.office, got = E.hireMix(S, Math.min(5, Math.max(1, E.canHire(S))));
       if (got) { Snd.play('click'); if (S.office !== before) drop('Moved to ' + h(D.offices[S.office].name), true); } else Snd.play('no');
     }
-    else if (a === 'pip') { E.setPip(S, el.getAttribute('data-s'), n); Snd.play('click'); }
+    else if (a === 'pip') {
+      var s = el.getAttribute('data-s'), had = JSON.parse(JSON.stringify(S.alloc));
+      E.setPip(S, s, n); Snd.play('click');
+      E.STREAMS.forEach(function (o) { if (o !== s && S.alloc[o] < had[o]) fxAt['pip:' + o] = Date.now(); });
+    }
     else if (a === 'crunch') { S.crunch = !S.crunch; Snd.play(S.crunch ? 'bad' : 'click'); }
     else if (a === 'market') { if (E.marketing(S)) { Snd.play('cash'); drop('Trailer booked', true); } }
-    else if (a === 'vaal') { res = E.vaal(S); if (res && !busy) showInfo('Vaal or no balls', res.title, res); else if (res) drop(h(res.title + '. ' + res.text), true); }
+    else if (a === 'layoff') { res = E.layoff(S); Snd.play(res ? 'bad' : 'no'); if (res) drop('&minus;' + res.gone + ' staff', true); }
+    else if (a === 'vaal') { res = E.vaal(S); if (res) result('Vaal or no balls', res.title, res); }
     else if (a === 'desync') {
       res = E.clickRequest(S, 'desync');
-      if (res && res.done) { Snd.play('good'); if (!busy) showInfo('After about eight years', res.name, res, 'desync'); else drop(h(res.text), true); }
+      if (res && res.done) { Snd.play('good'); result('After about eight years', res.name, res, 'desync'); }
       else if (res) { Snd.play('click'); drop(h(res.text), true); }
     }
     else if (a === 'reqbuild') {
+      var before = S.cyc.pts.content, t = S.cyc.target.content || 1;
       res = E.buildRequest(S, id);
-      if (res && res.ok) { Snd.play('good'); if (!busy) showInfo('Shipped', res.name, res, id); else drop(h(res.name + ' shipped. ' + res.text), true); }
+      if (res && res.ok) {
+        drainFx = { from: vialH(before / t), to: vialH(S.cyc.pts.content / t) }; fxAt.drain = Date.now(); preview = null;
+        Snd.play('good'); result('Shipped', res.name, res, id);
+      }
     }
     else if (a === 'reqclick') { res = E.clickRequest(S, id); if (res) { reqMsg[id] = res.text; Snd.play('no'); } }
     render();
@@ -527,8 +616,19 @@
       else Object.keys(KEYS).forEach(function (a) { if (KEYS[a].toLowerCase() === k) el = document.querySelector('#hud [data-act="' + a + '"]'); });
       if (el) { ev.preventDefault(); act(el); }
     });
+    /* Pointing at a request's build button shows its cost on the Release flask. */
+    function aimAt(target) {
+      var rb = target && target.closest ? target.closest('[data-act="reqbuild"]') : null, id = rb ? rb.getAttribute('data-id') : null;
+      if (id === preview) return;
+      preview = id;
+      if (S && !atTitle()) renderHud();
+    }
+    document.addEventListener('focusin', function (ev) { aimAt(ev.target); });
+    document.addEventListener('focusout', function (ev) { aimAt(ev.relatedTarget); });
+    document.documentElement.addEventListener('mouseleave', function () { aimAt(null); });
     var tip = $('tip');
     document.addEventListener('mouseover', function (ev) {
+      aimAt(ev.target);
       var el = ev.target.closest ? ev.target.closest('[data-tip]') : null;
       if (!el || !el.getAttribute('data-tip')) { tip.style.display = 'none'; return; }
       tip.textContent = el.getAttribute('data-tip');
@@ -570,7 +670,10 @@
     $('card').innerHTML = ''; $('drops').innerHTML = ''; $('stage').className = '';
     $('title').className = 'hidden';
     document.body.className = '';
+    /* What is already on the HUD when a game starts or loads counts as seen, without a glow. */
+    quietSeen = !S.ui || !S.ui.seen;
     renderFeed(); render();
+    quietSeen = false;
   }
   UI.save = function () { if (S) store(SAVE, JSON.stringify(S)); };
   UI.newGame = function (deeper) {
