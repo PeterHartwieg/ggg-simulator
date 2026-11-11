@@ -1,61 +1,7 @@
-/* Generated graphics: the skill-web backdrop and the player-count chart.
-   Nothing here is an image file, and nothing is copied from any game. */
+/* Drawn at runtime: the player-count chart and the embers. Game artwork is mapped in art/manifest.js. */
 (function () {
   'use strict';
   var GGG = window.GGG, A = GGG.art = {};
-
-  /* A skill web from a fixed seed. One cluster lights up per release shipped. */
-  A.drawTree = function (cv, lit) {
-    if (!cv) return;
-    var dpr = window.devicePixelRatio || 1, W = window.innerWidth, H = window.innerHeight;
-    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-    cv.style.width = W + 'px'; cv.style.height = H + 'px';
-    var ctx = cv.getContext('2d'), seed = 20061106;
-    function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-    var cx = W * 0.4, cy = H * 0.46, R = Math.max(W, H * 1.25) * 0.62;
-    var rings = [[0.13, 6], [0.29, 11], [0.48, 16], [0.7, 22], [0.96, 28]], clusters = [], roads = [], start = 0;
-    rings.forEach(function (rg, ri) {
-      for (var i = 0; i < rg[1]; i++) {
-        var a = (i + (ri % 2) * 0.5) / rg[1] * Math.PI * 2 + rnd() * 0.14, rr = R * rg[0] * (0.93 + rnd() * 0.14);
-        clusters.push({ x: cx + Math.cos(a) * rr, y: cy + Math.sin(a) * rr * 0.8, r: 14 + rnd() * 17, k: 5 + Math.floor(rnd() * 5), rot: rnd() * 6 });
-      }
-      for (i = 0; i < rg[1]; i++) {
-        roads.push([start + i, start + (i + 1) % rg[1]]);
-        if (ri > 0) {
-          var pn = rings[ri - 1][1];
-          roads.push([start + i, start - pn + Math.round(i / rg[1] * pn) % pn]);
-        }
-      }
-      start += rg[1];
-    });
-    function dot(x, y, r, on) {
-      ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832);
-      ctx.fillStyle = on ? '#5a3f12' : '#0b0806'; ctx.fill();
-      ctx.strokeStyle = on ? '#f0d394' : 'rgba(170,142,94,.5)'; ctx.lineWidth = on ? 1.5 : 1; ctx.stroke();
-    }
-    ctx.lineWidth = 1;
-    roads.forEach(function (rd) {
-      var a = clusters[rd[0]], b = clusters[rd[1]], on = rd[0] < lit && rd[1] < lit;
-      ctx.strokeStyle = on ? 'rgba(240,211,148,.7)' : 'rgba(150,125,82,.26)';
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-      dot(a.x + (b.x - a.x) / 3, a.y + (b.y - a.y) / 3, 1.8, on);
-      dot(a.x + (b.x - a.x) * 2 / 3, a.y + (b.y - a.y) * 2 / 3, 1.8, on);
-    });
-    clusters.forEach(function (c, i) {
-      var on = i < lit;
-      ctx.shadowColor = '#f0d394'; ctx.shadowBlur = on ? 14 : 0;
-      ctx.strokeStyle = on ? 'rgba(240,211,148,.8)' : 'rgba(150,125,82,.3)';
-      ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, 6.2832); ctx.stroke();
-      for (var j = 0; j < c.k; j++) {
-        var a = c.rot + j / c.k * 6.2832;
-        dot(c.x + Math.cos(a) * c.r, c.y + Math.sin(a) * c.r, 2.4, on);
-      }
-      dot(c.x, c.y, 5.5, on);
-      ctx.shadowBlur = 0;
-    });
-  };
 
   /* The sawtooth: your concurrent players over time, with the real launch peaks as teal marks. */
   A.drawChart = function (cv, S) {
@@ -76,13 +22,20 @@
       var x = i / span * W, y = top + h - h * data[i] / max;
       if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
     }
-    ctx.strokeStyle = 'rgba(232,201,135,.9)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.shadowColor = 'rgba(255,196,110,.75)'; ctx.shadowBlur = 9;
+    ctx.strokeStyle = 'rgba(243,220,167,.95)'; ctx.lineWidth = 1.5; ctx.lineJoin = 'round'; ctx.stroke();
+    ctx.shadowBlur = 0;
     ctx.lineTo(W, top + h); ctx.lineTo(0, top + h); ctx.closePath();
     var g = ctx.createLinearGradient(0, top, 0, top + h);
     g.addColorStop(0, 'rgba(201,170,113,.28)'); g.addColorStop(1, 'rgba(201,170,113,0)');
     ctx.fillStyle = g; ctx.fill();
-    ctx.fillStyle = '#3fd0c4';
-    S.history.forEach(function (hh) { if (hh.online && !hh.est) ctx.fillRect(X(hh.week) - 3, top + h - h * hh.realPeak / max - 1, 7, 2); });
+    ctx.fillStyle = '#3fd0c4'; ctx.shadowColor = 'rgba(63,208,196,.8)'; ctx.shadowBlur = 6;
+    S.history.forEach(function (hh) {
+      if (!hh.online || hh.est) return;
+      var mx = X(hh.week), my = top + h - h * hh.realPeak / max;
+      ctx.beginPath(); ctx.moveTo(mx, my - 3.5); ctx.lineTo(mx + 3.5, my); ctx.lineTo(mx, my + 3.5); ctx.lineTo(mx - 3.5, my); ctx.fill();
+    });
+    ctx.shadowBlur = 0;
     ctx.font = '10px Verdana, sans-serif'; ctx.fillStyle = 'rgba(143,133,113,.9)';
     var y0 = GGG.util.dateOf(first).getUTCFullYear(), y1 = GGG.util.dateOf(S.week).getUTCFullYear(), every = Math.max(1, Math.ceil((y1 - y0) / 10));
     for (var yr = y0 + 1; yr <= y1; yr += every) {
@@ -90,5 +43,44 @@
       if (wx > 14 && wx < W - 30) ctx.fillText(String(yr), wx - 12, H - 3);
     }
     ctx.fillText(GGG.util.short(max), 4, 10);
+  };
+
+  /* Embers drifting up through a canvas. Runs only while the canvas is on screen. */
+  A.embers = function (cv, count) {
+    if (!cv || cv._embers || !window.requestAnimationFrame) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    cv._embers = true;
+    var ctx = cv.getContext('2d'), P = [], last = 0, W = 0, H = 0, n = count || 44, i;
+    function spawn(p, anywhere) {
+      p.x = Math.random() * W; p.y = anywhere ? Math.random() * H : H + 8;
+      p.r = 0.5 + Math.random() * 1.7; p.vy = 9 + Math.random() * 30; p.vx = -7 + Math.random() * 14;
+      p.age = 0; p.max = 5 + Math.random() * 9; p.ph = Math.random() * 6.28; p.hot = Math.random() < 0.25;
+    }
+    function frame(t) {
+      if (!cv.isConnected) { cv._embers = false; return; }
+      window.requestAnimationFrame(frame);
+      var w = cv.clientWidth, hh = cv.clientHeight, dpr = Math.min(2, window.devicePixelRatio || 1), dt = Math.min(0.05, (t - last) / 1000);
+      last = t;
+      if (!w || !hh || document.hidden || window.getComputedStyle(cv).visibility === 'hidden') return;
+      if (w !== W || hh !== H) {
+        W = w; H = hh; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+        if (!P.length) for (i = 0; i < n; i++) { P.push({}); spawn(P[i], true); }
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      ctx.globalCompositeOperation = 'lighter';
+      for (i = 0; i < P.length; i++) {
+        var p = P[i];
+        p.age += dt; p.y -= p.vy * dt; p.x += (p.vx + Math.sin(p.ph + p.age * 1.3) * 10) * dt;
+        if (p.age > p.max || p.y < -10) { spawn(p, false); continue; }
+        var a = Math.sin(Math.PI * p.age / p.max) * (p.hot ? 0.9 : 0.55);
+        ctx.fillStyle = 'rgba(255,' + (p.hot ? 190 : 150) + ',70,' + (a * 0.22).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 3.4, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = 'rgba(255,' + (p.hot ? 226 : 186) + ',130,' + a.toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    window.requestAnimationFrame(frame);
   };
 })();

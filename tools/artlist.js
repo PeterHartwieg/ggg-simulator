@@ -9,15 +9,18 @@ vm.createContext(ctx);
 ['js/util.js', 'js/data/tune.js', 'js/data/cycles.js', 'js/data/events.js', 'js/data/randoms.js', 'js/data/requests.js'].forEach(function (f) {
   vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
 });
-var D = ctx.GGG.data, out = [];
-function line(id, what) { out.push((id + '.jpg').padEnd(22) + what); }
+var D = ctx.GGG.data, out = [], slots = 0;
+function line(id, what) { out.push((id + '.jpg').padEnd(22) + what); slots++; }
 
 out.push('PICTURE SLOTS');
 out.push('');
-out.push('Save a picture in this folder under one of the names below and the game uses it.');
-out.push('No code changes needed. .jpg, .png and .webp all work. Reload the page afterwards.');
-out.push('Anything you do not supply falls back to the built-in art.');
-out.push('You are responsible for having the right to use whatever you put here.');
+out.push('GGG artwork is bundled in art/ggg. credits.html lists every source and use.');
+out.push('sources.json is the source catalog; rebuild with python tools/import-art.py (Pillow required).');
+out.push('manifest.js maps pictures to slots and takes precedence over automatic file-name lookup.');
+out.push('For unmapped slots, save art/<slot>.jpg, .png or .webp and reload the page.');
+out.push('To replace bundled art, edit sources.json and rebuild, or edit manifest.js directly.');
+out.push('Missing optional pictures leave the underlying GGG background visible.');
+out.push('All included game artwork is copyright Grinding Gear Games. This is an unofficial fan project.');
 out.push('');
 out.push('WHOLE GAME');
 line('background', 'Page background, behind every panel. Large and dark works best.');
@@ -38,4 +41,4 @@ D.requests.forEach(function (r) { line(r.id, r.name); });
 out.push('');
 out.push('To use other file names or locations, list them in manifest.js instead.');
 fs.writeFileSync(path.join(root, 'art', 'README.txt'), out.join('\r\n') + '\r\n');
-console.log('wrote art/README.txt with ' + (out.length - 16) + ' slots');
+console.log('wrote art/README.txt with ' + slots + ' slots');

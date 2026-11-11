@@ -5,22 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Still Sane, Founder? An unofficial GGG simulator</title>
 <meta name="description" content="A fan-made parody management game about twenty years of running an action RPG studio. Not affiliated with Grinding Gear Games.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%23070504'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23c9aa71' stroke-width='5' stroke-dasharray='3.9 3.95'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='%23c9aa71'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23070504'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600;700&display=swap">
 </head>
 <body>
-
-<canvas id="tree" aria-hidden="true"></canvas>
 
 <div id="app">
   <header id="top"></header>
   <main id="main">
     <section id="stage">
-      <div id="stage-bg"></div>
+      <div id="stage-bg"><i></i><i></i></div>
+      <canvas id="embers" aria-hidden="true"></canvas>
       <canvas id="chart" aria-hidden="true"></canvas>
       <div id="rel"></div>
       <div id="card" aria-live="polite"></div>
       <div id="drops" aria-live="polite"></div>
+      <div id="flash"></div>
     </section>
     <aside id="side">
       <h2>r/pathofexile</h2>

@@ -5,7 +5,7 @@
   var GGG = window.GGG, U = GGG.util, D = GGG.data, E = GGG.engine, A = GGG.art, Snd = GGG.audio;
   var UI = GGG.ui = {};
   var S = null, speed = 1, paused = false, busy = false, pend = null, timer = null, cardTimer = null, modal = null;
-  var treeLit = -1, logoSrc = null, titleSrc = null, bgFor = null, logoClicks = 0, reqMsg = {}, lastFlip = '';
+  var logoSrc = null, titleSrc = null, bgFor = null, bgHold = null, bgLayer = 0, logoClicks = 0, reqMsg = {}, lastFlip = '';
   var SAVE = 'ggg-sim-save-v1', DEPTH = 'ggg-sim-depth', TICK_MS = 1000, DECIDE_MS = 45000;
   var KIND = { proto: 'Milestone', beta: 'Beta', release: 'Release', league: 'Challenge league', expansion: 'Expansion', poe2: 'Path of Exile 2', con: 'Convention', sim: 'Side project' };
   var FLASK = { content: 'Release', polish: 'QA', mtx: 'Shop', infra: 'Servers', future: 'Long game' };
@@ -19,7 +19,7 @@
   function atTitle() { return document.body.className === 'at-title'; }
   UI.depth = function () { return Math.max(1, parseInt(load(DEPTH), 10) || 1); };
 
-  /* Your own pictures: art/<name>.jpg, .png or .webp, or anything named in art/manifest.js. */
+  /* Bundled GGG artwork is mapped in art/manifest.js. Extra pictures can use slot names. */
   var EXT = ['.jpg', '.png', '.webp'], found = {};
   function skin(key) { return GGG.artOverrides && GGG.artOverrides[key]; }
   function probe(name, cb) {
@@ -35,12 +35,35 @@
       im.src = src;
     })();
   }
+  function srcOf(name) { var named = skin('images'); return (named && named[name]) || found[name] || null; }
+  function listed(key, src) { return (skin(key) || []).indexOf(src) !== -1; }
+  function logoOf(id) { var logos = skin('releaseLogos'); return (logos && logos[id]) || null; }
+  /* Logos with a see-through background are shown as they are. The others get their dark backdrop blended away. */
+  function logoImg(src, cls) { return '<img class="' + cls + (listed('transparentLogos', src) ? ' clear' : ' solid') + '" src="' + h(src) + '" alt="">'; }
+  /* Two layers, so one scene fades into the next. Loading screens are cropped above their loading bar. */
+  function setScene(id) {
+    if (bgFor === id) return;
+    bgFor = id;
+    probe(id, function (src) {
+      var im = new Image();
+      im.onload = function () {
+        if (bgFor !== id) return;
+        var layers = $('stage-bg').children, old = layers[bgLayer], next = layers[bgLayer = 1 - bgLayer];
+        next.style.backgroundImage = 'url("' + src + '")';
+        next.className = 'on' + (listed('loadingScreens', src) ? ' ls' : '');
+        old.classList.remove('on');
+      };
+      im.src = src;
+    });
+  }
   function applySkin() {
-    function bg(src) { document.body.style.background = 'linear-gradient(rgba(7,5,4,.6), rgba(7,5,4,.86)), url("' + src + '") center / cover fixed #070504'; }
+    function bg(src) { document.body.style.background = 'linear-gradient(rgba(7,5,4,.45), rgba(7,5,4,.8)), url("' + src + '") center / cover fixed #070504'; }
     if (skin('background')) bg(skin('background')); else probe('background', bg);
     logoSrc = skin('logo') || null; titleSrc = skin('title') || null;
     if (!logoSrc) probe('logo', function (src) { logoSrc = src; if (atTitle()) UI.title(); else if (S) render(); });
-    if (!titleSrc) probe('title', function (src) { titleSrc = src; if (atTitle()) UI.title(); });
+    function titleBackground(src) { $('title').style.setProperty('--title-art', 'url("' + new URL(src, document.baseURI).href + '")'); }
+    if (titleSrc) titleBackground(titleSrc);
+    else probe('title', function (src) { titleSrc = src; titleBackground(src); });
   }
 
   /* ---------- top line ---------- */
@@ -48,7 +71,12 @@
   var ICON = {
     coin: '<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="#c9aa71" stroke="#5a4320"/><circle cx="8" cy="8" r="3.4" fill="none" stroke="#5a4320"/></svg>',
     people: '<svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3" fill="#d8ccb2"/><path d="M2 15c0-4 3-6 6-6s6 2 6 6z" fill="#d8ccb2"/></svg>',
-    up: '<svg viewBox="0 0 16 16"><path d="M8 1l7 8h-4v6H5V9H1z" fill="currentColor"/></svg>'
+    up: '<svg viewBox="0 0 16 16"><path d="M8 1l7 8h-4v6H5V9H1z" fill="currentColor"/></svg>',
+    hire: '<svg viewBox="0 0 24 24"><circle cx="10" cy="8" r="4"/><path d="M2.5 21c0-4.6 3.3-7.5 7.5-7.5s7.5 2.9 7.5 7.5z"/><path d="M19 4v7M15.5 7.5h7" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>',
+    crunch: '<svg viewBox="0 0 24 24"><path d="M12.5 1.5c1 4-3.5 5.5-3.5 9 0 1 .5 2 1.2 2.5C9.7 10.5 12 9.5 12.5 8c2.5 2.5 4.5 5 4.5 8.3 0 3.2-2.3 5.7-5.2 5.7S6.5 19.7 6.5 16.5c0-1.8.7-3.3 1.6-4.4C6.8 8.5 10.5 6.5 12.5 1.5z"/></svg>',
+    market: '<svg viewBox="0 0 24 24"><path d="M3 9.5v5h3.5l7 5V4.5l-7 5z"/><path d="M16.5 8.5c1.5 1 1.5 6 0 7M19 5.5c3.5 2.5 3.5 10.5 0 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    vaal: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3.5l-2.5 5 4 3-3.5 4 2 5" fill="none" stroke="#120303" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    desync: '<svg viewBox="0 0 24 24"><g opacity=".4"><circle cx="8" cy="7" r="3.2"/><path d="M2.5 21c0-4.5 2.4-7 5.5-7s5.5 2.5 5.5 7z"/></g><circle cx="15.5" cy="7" r="3.2"/><path d="M10 21c0-4.5 2.4-7 5.5-7s5.5 2.5 5.5 7z"/></svg>'
   };
   function st(icon, value, extra, tip) {
     return '<span class="st" data-tip="' + h(tip) + '">' + (icon || '') + '<b>' + value + '</b>' + (extra || '') + '</span>';
@@ -61,7 +89,7 @@
     html += st(ICON.people, S.launchWeek >= 0 ? U.num(S.players) : '0', '', 'Players online');
     if (ann) html += '<span class="st mood" style="color:hsl(' + Math.round(S.mood * 1.2) + ',70%,55%)" data-tip="The subreddit: ' + h(label(D.text.moods, S.mood)) + '">' +
       '<span' + (S.mood < 45 ? ' class="down"' : '') + '>' + ICON.up + '</span></span>';
-    html += '<span class="spacer"></span><span class="speed"><button class="btn' + (paused ? ' on' : '') + '" data-act="pause">&#10074;&#10074;</button>';
+    html += '<span class="spacer"></span><span class="speed" data-tip="Space pauses. Minus and plus change speed."><button class="btn' + (paused ? ' on' : '') + '" data-act="pause">&#10074;&#10074;</button>';
     [1, 2, 4].forEach(function (sp, i) { html += '<button class="btn' + (!paused && speed === sp ? ' on' : '') + '" data-act="speed" data-n="' + sp + '">' + ['&#9654;', '&#9654;&#9654;', '&#9654;&#9654;&#9654;'][i] + '</button>'; });
     html += '<button class="btn' + (Snd.muted ? '' : ' on') + '" data-act="mute" data-tip="Sound">&#9834;</button></span>';
     $('top').innerHTML = html;
@@ -72,15 +100,15 @@
   function lead(text, n) { var parts = String(text || '').split(/(?<=[.?!])\s+/); return parts.slice(0, n).join(' '); }
   function renderRel() {
     var c = E.cycle(S), ship = E.shipWeek(S);
-    if (S.over) { $('rel').innerHTML = '<h1>The End</h1>'; return; }
+    if (S.over) { $('rel').className = ''; $('rel').setAttribute('data-key', 'over'); $('rel').innerHTML = '<h1>The End</h1>'; return; }
     $('rel').setAttribute('data-tip', c.blurb);
-    $('rel').innerHTML = '<h1><small>' + h(c.ver) + '</small>' + h(c.name) + '</h1><div class="when">' + U.fmtDate(ship, true) + '</div>';
-    if (bgFor !== c.id) {
-      bgFor = c.id;
-      var el = $('stage-bg'), want = c.id;
-      el.className = '';
-      probe(want, function (src) { if (bgFor === want) { el.style.backgroundImage = 'url("' + src + '")'; el.className = 'on'; } });
-    }
+    var logo = logoOf(c.id), key = c.id + '|' + ship;
+    setScene(bgHold || c.id);
+    if ($('rel').getAttribute('data-key') === key) return;
+    $('rel').setAttribute('data-key', key);
+    $('rel').className = logo ? 'with-logo' : '';
+    $('rel').innerHTML = (logo ? logoImg(logo, 'release-logo') : '') +
+      '<h1><small>' + h(c.ver) + '</small>' + h(c.name) + '</h1><div class="when">' + U.fmtDate(ship, true) + '</div>';
   }
 
   /* ---------- the HUD ---------- */
@@ -88,8 +116,10 @@
   function globe(cls, v, tip) {
     return '<div class="globe ' + cls + '" data-tip="' + h(tip) + '"><div class="orb"><i style="height:' + Math.round(v) + '%"></i><span>' + Math.round(v) + '</span></div></div>';
   }
+  var KEYS = { hire: 'Q', crunch: 'W', market: 'E', vaal: 'R', desync: 'T' };
   function skill(act, cls, name, sub, tip, off) {
-    return '<button class="skill ' + cls + '" data-act="' + act + '" data-tip="' + h(tip) + '"' + (off ? ' disabled' : '') + '><b>' + name + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</button>';
+    return '<button class="skill s-' + act + ' ' + cls + '" data-act="' + act + '" data-tip="' + h(tip) + '"' + (off ? ' disabled' : '') + '><kbd>' + KEYS[act] + '</kbd>' +
+      ICON[act] + '<b>' + name + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</button>';
   }
   function renderHud() {
     var pr = E.projection(S), ann = !!S.flags.announced, heads = E.headcount(S), real = Math.round(E.parHeadcount(S.week));
@@ -107,16 +137,16 @@
     var ds = S.req.desync, dq = D.requests[0];
     if (S.week >= dq._from && !(ds && ds.built != null)) html += skill('desync', '', 'Desync', ds && ds.clicks ? String(ds.clicks) : '', 'Fix desync. Keep pressing.');
     html += '</div><div class="belt">';
-    E.STREAMS.forEach(function (s) {
+    E.STREAMS.forEach(function (s, si) {
       var open = E.streamOpen(S, s), p = pr[s], now = open && p ? p.now : 0, proj = open && p ? p.proj : 0;
       html += '<div class="flask f-' + s + (open ? '' : ' locked') + (open && proj < 0.7 ? ' low' : '') + '" data-tip="' + h(D.streams[s].what + (open ? ' On course for ' + pc(proj) + '.' : '')) + '">' +
-        '<div class="vial"><i class="proj" style="height:' + Math.min(100, proj / 1.2 * 100) + '%"></i><i class="now" style="height:' + Math.min(100, now / 1.2 * 100) + '%"></i><em></em></div>' +
+        '<kbd>' + (si + 1) + '</kbd><div class="vial"><i class="proj" style="height:' + Math.min(100, proj / 1.2 * 100) + '%"></i><i class="now" style="height:' + Math.min(100, now / 1.2 * 100) + '%"></i><em></em></div>' +
         '<small>' + FLASK[s] + '</small>' +
         '<div class="ctl"><button class="btn" data-act="pip" data-s="' + s + '" data-n="-1"' + (!open || S.alloc[s] <= 0 ? ' disabled' : '') + '>&minus;</button><span>' + S.alloc[s] + '</span>' +
         '<button class="btn" data-act="pip" data-s="' + s + '" data-n="1"' + (!open ? ' disabled' : '') + '>+</button></div></div>';
     });
     html += '</div>' + globe('mana', ann ? S.hype : 0, 'Hype for the next launch');
-    html += '<div class="xp" data-tip="Time until this release ships"><i style="width:' + Math.round(pr.elapsed * 100) + '%"></i></div>';
+    html += '<div class="xp" data-tip="Time until this release ships"><i style="width:' + (pr.elapsed * 100).toFixed(1) + '%"></i></div>';
     $('hud').innerHTML = html;
   }
 
@@ -170,14 +200,22 @@
   function render() {
     if (!S) return;
     renderTop(); renderRel(); renderHud(); renderReqs();
+    /* Nobody has heard of the game yet, so there is no subreddit to show. */
+    $('main').classList.toggle('solo', !S.flags.announced && !$('reqs').firstChild && !$('feed').firstChild);
     A.drawChart($('chart'), S);
-    if (treeLit !== S.history.length) { treeLit = S.history.length; A.drawTree($('tree'), treeLit); }
   }
   UI.render = render;
 
   /* ---------- cards ---------- */
 
-  function head(title) { return title ? '<div class="c-head"><b>' + h(title) + '</b></div>' : ''; }
+  function head(title, sub) { return title ? '<div class="c-head' + (sub ? ' two' : '') + '"><b>' + h(title) + '</b>' + (sub ? '<small>' + h(sub) + '</small>' : '') + '</div>' : ''; }
+  /* The league's own art and logo across the top of its launch card. */
+  function banner(id) {
+    var scene = srcOf(id), logo = logoOf(id);
+    if (!scene && !logo) return '';
+    return '<div class="c-banner' + (scene && listed('loadingScreens', scene) ? ' ls' : '') + '"' + (scene ? ' style="background-image:url(' + h(encodeURI(scene)) + ')"' : '') + '>' +
+      (logo ? logoImg(logo, 'banner-logo') : '') + '</div>';
+  }
   function mods(chips) {
     if (!chips || !chips.length) return '';
     return '<div class="mods">' + chips.map(function (c) { return '<span class="' + (c.good === true ? 'good' : c.good === false ? 'bad' : '') + '">' + h(c.text) + '</span>'; }).join('') + '</div>';
@@ -190,9 +228,10 @@
     $('card').innerHTML = '<div class="card ' + (cls || '') + '"' + (clickable ? ' data-act="cont"' : '') + '>' +
       (why ? '<span class="why" data-tip="' + h(why) + '">?</span>' : '') + html + '</div>';
     if (pic) {
+      var card = $('card').firstChild;
       probe(pic, function (src) {
-        var c = $('card').firstChild;
-        if (c && !c.querySelector('.c-pic')) c.insertAdjacentHTML('afterbegin', '<img class="c-pic" src="' + h(src) + '" alt="">');
+        var contain = (skin('containImages') || []).indexOf(pic) !== -1;
+        if ($('card').firstChild === card && !card.querySelector('.c-pic')) card.insertAdjacentHTML('afterbegin', '<img class="c-pic' + (contain ? ' contain' : '') + '" src="' + h(src) + '" alt="">');
       });
     }
   }
@@ -201,6 +240,7 @@
   function release() {
     clearTimeout(cardTimer);
     busy = false;
+    if (bgHold) { bgHold = null; if (S) renderRel(); }
     var c = $('card').firstChild;
     if (c) {
       c.className += ' done';
@@ -274,15 +314,18 @@
     }
     var verdict = r.online ? E.TIER_NAME[r.tier] : r.kind === 'con' ? (r.quality >= 0.9 ? 'Standing ovation' : 'Polite applause') : r.kind === 'sim' ? 'It runs' : (r.quality >= 0.9 ? 'It works' : 'It mostly works');
     body += '<div class="verdict t-' + r.tier + '">' + verdict + '</div>';
-    if (r.crash) chips.push({ text: 'Servers crashed', good: false }); else if (r.queue) chips.push({ text: 'Queue', good: null });
+    if (r.crash) chips.push({ text: 'Servers crashed', good: false }); else if (r.queue) chips.push({ text: 'Queue position ' + U.num(Math.round(r.peak * 0.37)), good: null });
     if (r.bugs) chips.push({ text: r.bugs + (r.bugs === 1 ? ' bug' : ' bugs'), good: false });
     if (r.online && S.flags.announced) chips.push({ text: 'Reddit ' + (r.moodDelta >= 0 ? '+' : '') + r.moodDelta, good: r.moodDelta >= 0 });
     if (r.burst) chips.push({ text: '+' + U.money(r.burst), good: true });
     body += mods(chips.concat(r.chips || []));
     var ms = 6500;
     Snd.play('launch');
-    setCard(head((r.ver ? r.ver + ' ' : '') + r.name) + '<div class="c-body">' + body + '</div>' + timerBar(ms), 'launch' + (r.crash ? ' crash' : ''), r.id, c.reality, true);
+    bgHold = r.id; setScene(r.id);
+    setCard(banner(r.id) + head(r.name, (r.ver ? r.ver + ' ' : '') + (KIND[r.kind] || '')) + '<div class="c-body">' + body + '</div>' + timerBar(ms), 'launch' + (r.crash ? ' crash' : ''), null, c.reality, true);
     hold(ms);
+    var fl = $('flash');
+    fl.className = ''; void fl.offsetWidth; fl.className = r.crash ? 'go red' : 'go';
     if (r.online) {
       var t0 = performance.now();
       (function count(now) {
@@ -309,7 +352,7 @@
     } else if (p.type === 'intro') {
       c = E.cycle(S);
       if (c.dilemma) {
-        showDecision({ kind: 'intro', title: '', text: c.dilemma.text, choices: c.dilemma.choices, canon: c.dilemma.free ? null : (c.dilemma.canon || 0) });
+        showDecision({ kind: 'intro', title: c.name, text: c.dilemma.text, choices: c.dilemma.choices, canon: c.dilemma.free ? null : (c.dilemma.canon || 0) });
       } else { E.resolveIntro(S, null); UI.save(); }
       render();
     } else if (p.type === 'event') {
@@ -330,7 +373,7 @@
 
   function openModal(o) {
     modal = o;
-    $('modal-root').innerHTML = '<div class="card modal">' + head(o.title) + '<div class="c-body">' + o.body + '</div><div class="c-foot">' +
+    $('modal-root').innerHTML = '<div class="card modal ' + (o.cls || '') + '">' + (o.top || '') + head(o.title, o.sub) + '<div class="c-body">' + o.body + '</div><div class="c-foot">' +
       o.buttons.map(function (b) { return '<button class="btn ' + (b.cls || '') + '" data-m="' + b.act + '">' + h(b.label) + '</button>'; }).join('') + '</div></div>';
     $('modal-root').className = 'open';
   }
@@ -340,7 +383,8 @@
     openModal({
       title: 'Still Sane, Founder?',
       body: '<p class="picked">Secrets ' + got.length + ' / ' + total + '</p><div class="eggs">' +
-        got.map(function (id) { return '<div><b>' + h(D.eggs[id].name) + '</b>' + h(D.eggs[id].what) + '</div>'; }).join('') + '</div>',
+        got.map(function (id) { return '<div><b>' + h(D.eggs[id].name) + '</b>' + h(D.eggs[id].what) + '</div>'; }).join('') +
+        '</div><p class="legal">Game artwork © Grinding Gear Games. <a href="art/credits.html" target="_blank" rel="noopener">Artwork credits</a></p>',
       buttons: [{ label: 'Start over', act: 'new' }, { label: 'Back to work', act: 'go', cls: 'gold' }],
       onAct: function (act) { closeModal(); if (act === 'new') { store(SAVE, null); UI.title(); } }
     });
@@ -356,14 +400,15 @@
     var e = E.ending(S), depth = UI.depth();
     Snd.play('good');
     openModal({
-      kicker: 'One more thing', title: 'GGG Simulator is finished',
-      body: '<p class="picked">' + h(endingTitle(e)) + '</p><div class="grid">' +
+      title: 'GGG Simulator', sub: endingTitle(e), cls: 'launch', top: banner('c_sim'),
+      body: '<div class="grid">' +
         '<div><label>Launches that beat reality</label><b>' + e.beat + ' / ' + e.launches + '</b></div>' +
         '<div><label>Players vs the real studio</label><b>' + pc(e.vsReality) + '</b></div>' +
         '<div><label>Lifetime income</label><b>' + U.money(e.revenue) + '</b></div>' +
         '<div><label>Reddit</label><b>' + label(D.text.moods, e.mood) + '</b></div>' +
         '<div><label>Weeks of crunch</label><b>' + e.crunchWeeks + '</b></div>' +
-        '<div><label>Secrets</label><b>' + e.eggs + ' / ' + e.eggTotal + '</b></div></div>',
+        '<div><label>Secrets</label><b>' + e.eggs + ' / ' + e.eggTotal + '</b></div></div>' +
+        (depth > 1 ? '<p class="mirrored">Mirrored</p>' : ''),
       buttons: [{ label: 'Stay a while', act: 'stay' }, { label: '▶ Play GGG Simulator', act: 'play', cls: 'gold' }],
       onAct: function (act) {
         closeModal();
@@ -422,8 +467,14 @@
     });
     document.addEventListener('keydown', function (ev) {
       if (!S || modal || atTitle() || ev.target.tagName === 'INPUT') return;
+      if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      var SPEEDS = [1, 2, 4], k = ev.key.toLowerCase(), el = null, d = /^Digit[1-5]$/.test(ev.code) ? +ev.code.charAt(5) : 0;
       if (ev.code === 'Space') { ev.preventDefault(); paused = !paused; render(); }
-      else if (ev.key === '1' || ev.key === '2' || ev.key === '3') { speed = [1, 2, 4][+ev.key - 1]; paused = false; render(); }
+      else if (k === '-' || k === '_') { speed = SPEEDS[Math.max(0, SPEEDS.indexOf(speed) - 1)]; paused = false; render(); }
+      else if (k === '=' || k === '+') { speed = SPEEDS[Math.min(2, SPEEDS.indexOf(speed) + 1)]; paused = false; render(); }
+      else if (d) el = document.querySelector('#hud [data-act="pip"][data-s="' + E.STREAMS[d - 1] + '"][data-n="' + (ev.shiftKey ? -1 : 1) + '"]');
+      else Object.keys(KEYS).forEach(function (a) { if (KEYS[a].toLowerCase() === k) el = document.querySelector('#hud [data-act="' + a + '"]'); });
+      if (el) { ev.preventDefault(); act(el); }
     });
     var tip = $('tip');
     document.addEventListener('mouseover', function (ev) {
@@ -440,7 +491,7 @@
       tip.style.left = x + 'px'; tip.style.top = y + 'px';
     });
     $('chat').addEventListener('submit', function (ev) { ev.preventDefault(); if (S) chat($('chat-in').value); $('chat-in').value = ''; });
-    window.addEventListener('resize', function () { A.drawTree($('tree'), S && !atTitle() ? S.history.length : 0); if (S) A.drawChart($('chart'), S); });
+    window.addEventListener('resize', function () { if (S) A.drawChart($('chart'), S); });
     E.on(function (type, data) {
       if (type === 'post') addPost(data);
       else if (type === 'egg') { drop(h(D.eggs[data].name)); Snd.play('egg'); }
@@ -461,7 +512,9 @@
     }, TICK_MS / speed);
   }
   function start() {
-    paused = false; speed = 1; busy = false; pend = null; reqMsg = {}; bgFor = null; treeLit = -1;
+    paused = false; speed = 1; busy = false; pend = null; reqMsg = {}; bgFor = null; bgHold = null;
+    $('rel').removeAttribute('data-key');
+    A.embers($('embers'), 40);
     clearTimeout(cardTimer);
     clearTimeout(fadeTimer);
     $('card').innerHTML = ''; $('drops').innerHTML = ''; $('stage').className = '';
@@ -485,13 +538,14 @@
     try { saved = JSON.parse(load(SAVE)); } catch (e) { saved = null; }
     var hasSave = saved && saved.v === 1 && !saved.over;
     document.body.className = 'at-title';
-    A.drawTree($('tree'), 0); treeLit = -1;
     $('title').className = '';
-    $('title').innerHTML = '<div class="title-box">' + (logoSrc ? '<img src="' + h(logoSrc) + '" alt="">' : '') + (titleSrc ? '<img src="' + h(titleSrc) + '" alt="">' : '') +
-      '<h1>Still Sane, Founder?</h1>' +
+    $('title').innerHTML = '<canvas aria-hidden="true"></canvas><div class="title-box">' + (logoSrc ? '<img src="' + h(logoSrc) + '" alt="Grinding Gear Games">' : '') +
+      '<h1>Still Sane, <span>Founder?</span></h1><div class="rule"></div>' +
       '<div class="row">' + (hasSave ? '<button class="btn gold" id="t-continue">Continue, ' + U.fmtDate(saved.week) + '</button>' : '') +
       '<button class="btn' + (hasSave ? '' : ' gold') + '" id="t-new">New game</button></div>' +
-      '<p class="legal">Unofficial fan parody. Not affiliated with Grinding Gear Games.' + (depth > 1 ? ' Simulation depth ' + depth + '.' : '') + '</p></div>';
+      '<p class="legal">Unofficial fan parody. Not affiliated with Grinding Gear Games.' + (depth > 1 ? ' Simulation depth ' + depth + '.' : '') +
+      '<br>Game artwork © Grinding Gear Games. <a href="art/credits.html" target="_blank" rel="noopener">Artwork credits</a></p></div>';
+    A.embers($('title').firstChild, 70);
     $('t-new').onclick = function () { Snd.play('click'); UI.newGame(); };
     if (hasSave) $('t-continue').onclick = function () { Snd.play('click'); UI.resume(); };
   };

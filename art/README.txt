@@ -1,9 +1,12 @@
 PICTURE SLOTS
 
-Save a picture in this folder under one of the names below and the game uses it.
-No code changes needed. .jpg, .png and .webp all work. Reload the page afterwards.
-Anything you do not supply falls back to the built-in art.
-You are responsible for having the right to use whatever you put here.
+GGG artwork is bundled in art/ggg. credits.html lists every source and use.
+sources.json is the source catalog; rebuild with python tools/import-art.py (Pillow required).
+manifest.js maps pictures to slots and takes precedence over automatic file-name lookup.
+For unmapped slots, save art/<slot>.jpg, .png or .webp and reload the page.
+To replace bundled art, edit sources.json and rebuild, or edit manifest.js directly.
+Missing optional pictures leave the underlying GGG background visible.
+All included game artwork is copyright Grinding Gear Games. This is an unofficial fan project.
 
 WHOLE GAME
 background.jpg        Page background, behind every panel. Large and dark works best.
