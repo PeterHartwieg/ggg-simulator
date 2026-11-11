@@ -48,7 +48,8 @@
 
   St.visit = function () { post('/api/visit'); };
   St.begin = function (S) { markAt = Date.now(); ui(S).run = newId(); ui(S).secs = 0; send(S); };
-  St.resume = function () { markAt = Date.now(); };
+  /* A save from before the statistics existed gets its id now, so leaving the tab can record it. */
+  St.resume = function (S) { markAt = Date.now(); if (S && !ui(S).run) ui(S).run = newId(); };
   /* Every few launches, in case the page never gets to say goodbye. */
   St.launch = function (S) { if (S.history.length === 1 || S.history.length % SEND_EVERY === 0) send(S); else mark(S); };
   St.end = function (S) { send(S, true); };

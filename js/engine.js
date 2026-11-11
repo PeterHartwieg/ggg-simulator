@@ -158,6 +158,17 @@
     return r;
   };
 
+  /* How many people each kind of work occupies right now. The whole team is always split across the flasks
+     by their shares, so a new hire lands on them without being placed. Community staff are on none. */
+  E.crew = function (S) {
+    var out = { content: 0, polish: 0, mtx: 0, infra: 0, future: 0 };
+    MAKERS.forEach(function (d) {
+      var n = S.staff[d] || 0, sh = n && split(S.alloc, d);
+      if (sh) STREAMS.forEach(function (s) { out[s] += n * sh[s]; });
+    });
+    return out;
+  };
+
   E.commRatio = function (S) {
     var par = Math.max(0.6, E.parHeadcount(S.week) * COMP.comm);
     return U.clamp((S.staff.comm || 0) / par, 0, 1.6);

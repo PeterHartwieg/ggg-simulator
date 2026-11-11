@@ -14,8 +14,10 @@ function line(id, what) { out.push((id + '.jpg').padEnd(22) + what); slots++; }
 
 out.push('PICTURE SLOTS');
 out.push('');
-out.push('GGG artwork is bundled in art/ggg. credits.html lists every source and use.');
+out.push('GGG artwork is bundled in art/ggg; historic pictures in art/history.');
+out.push('credits.html lists every source, creator and licence where stated.');
 out.push('sources.json is the source catalog; rebuild with python tools/import-art.py (Pillow required).');
+out.push('The photos map selects historic card pictures; their captions and source links appear in game.');
 out.push('manifest.js maps pictures to slots and takes precedence over automatic file-name lookup.');
 out.push('For unmapped slots, save art/<slot>.jpg, .png or .webp and reload the page.');
 out.push('To replace bundled art, edit sources.json and rebuild, or edit manifest.js directly.');

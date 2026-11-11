@@ -4,7 +4,8 @@
   "notes": [
     "Artwork is GGG game art, screenshots, official logos and wallpapers. PoE Wiki hosts copies of GGG assets; it is not credited as their creator.",
     "Shared scenes illustrate the setting and are not represented as historical screenshots of the release. In particular, prototype/beta slots use later Act art; Harvest uses Act 2; Ultimatum and Allflame use Vaal art; Mirage uses the Wraeclast map. PoE 2 release scenes are selected wallpapers, not exact launch-screen reproductions.",
-    "The generated skill-web illustration has been removed. The player-count chart remains a data visualization."
+    "The generated skill-web illustration has been removed. The player-count chart remains a data visualization.",
+    "Historic card pictures are separate from the release backgrounds. Their captions state the pictured year or event; some are later reference photos. Creator, source and any stated licence are recorded below."
   ],
   "assets": {
     "act1": {
@@ -848,7 +849,8 @@
       "source": "https://web.poecdn.com/public/chris/old/1.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/445682",
       "kind": "photo",
-      "caption": "The first build, early 2007"
+      "caption": "The first build, early 2007",
+      "sha256": "91d8f0c25e72ea841f485690db4a87ef1338ccaa56abbb415cbad40bd2b55636"
     },
     "h_e_brian": {
       "file": "art/history/e_brian.webp",
@@ -857,7 +859,8 @@
       "source": "https://web.archive.org/web/20110514052243im_/http://www.grindinggear.com/dev_diary_pax/4.jpg",
       "sourcePage": "https://web.archive.org/web/20110514052243/http://pathofexile.com/news/2011-03-01/dev-diary-pax",
       "kind": "photo",
-      "caption": "Brian Weissman at PAX, 2010"
+      "caption": "Brian Weissman at PAX, 2010",
+      "sha256": "9cf0f418e963b061010ef86e27865f01437fe0eec7d563edb851725ff843f674"
     },
     "h_c_alpha": {
       "file": "art/history/c_alpha.webp",
@@ -866,7 +869,8 @@
       "source": "https://web.poecdn.com/public/chris/old/11.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/445682",
       "kind": "photo",
-      "caption": "The alpha interface, mid 2010"
+      "caption": "The alpha interface, mid 2010",
+      "sha256": "7db27d75531127aecc17fef9c07f02087cc720c3a76381635e08cde4ff704438"
     },
     "h_e_announce": {
       "file": "art/history/e_announce.webp",
@@ -875,7 +879,8 @@
       "source": "https://web.poecdn.com/public/chris/old/13.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/445682",
       "kind": "photo",
-      "caption": "The announcement screenshot, 2010"
+      "caption": "The announcement screenshot, 2010",
+      "sha256": "384f5ca3a6d991c6a04e98da301f15500cf9071ea89b4834dc9cac6c425b44ae"
     },
     "h_e_orbs": {
       "file": "art/history/e_orbs.webp",
@@ -884,7 +889,8 @@
       "source": "https://web.archive.org/web/20110211151131im_/http://www.grindinggear.com/devdiary_currency/gold2.png",
       "sourcePage": "https://web.archive.org/web/20110211151131/http://pathofexile.com:80/news/2011-02-08/dev-diary-currency",
       "kind": "photo",
-      "caption": "Currency in the alpha, February 2011"
+      "caption": "Currency in the alpha, February 2011",
+      "sha256": "ed516c83a1dd456b2a14fcf1515f3d054f50c4c667e839a33e2669ccaf25fe58"
     },
     "h_c_cb": {
       "file": "art/history/c_cb.webp",
@@ -893,7 +899,8 @@
       "source": "https://web.archive.org/web/20120114175922im_/http://www.grindinggear.com/dev_diary_pax2011/dvds.jpg",
       "sourcePage": "https://web.archive.org/web/20110924123832/http://www.pathofexile.com/news/2011-09-05/dev-diary-pax2011",
       "kind": "photo",
-      "caption": "Closed beta DVDs at PAX, 2011"
+      "caption": "Closed beta DVDs at PAX, 2011",
+      "sha256": "3c99a5f5b3d9eeae459659798decc8fd37cc13fc574d0ef91b01d486ea4828fc"
     },
     "h_e_packs": {
       "file": "art/history/e_packs.webp",
@@ -902,7 +909,8 @@
       "source": "https://web.archive.org/web/20120512154002im_/https://www.pathofexile.com/image/shop/content-kiwipack.png",
       "sourcePage": "https://web.archive.org/web/20120512154002/https://www.pathofexile.com/purchase",
       "kind": "photo",
-      "caption": "The Kiwi supporter pack, 2012"
+      "caption": "The Kiwi supporter pack, 2012",
+      "sha256": "12cf02db8293c796a579aa9c546c541c459266dff012ac9c66cb0a0af1811113"
     },
     "h_c_ob": {
       "file": "art/history/c_ob.webp",
@@ -911,7 +919,8 @@
       "source": "https://web.poecdn.com/public/chris/GGGandTheSchaefers2.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/307190",
       "kind": "photo",
-      "caption": "Chris Wilson and Jonathan Rogers, GDC 2013"
+      "caption": "Chris Wilson and Jonathan Rogers, GDC 2013",
+      "sha256": "e75ecf21f7ee4524cf878ef8d3d105fb8e08f0728be95ce9125f3f6f8d90cbda"
     },
     "h_c_anarchy": {
       "file": "art/history/c_anarchy.webp",
@@ -920,7 +929,8 @@
       "source": "https://web.poecdn.com/public/chris/leagues.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/400347",
       "kind": "photo",
-      "caption": "Choosing a challenge league, 2013"
+      "caption": "Choosing a challenge league, 2013",
+      "sha256": "17def516e082d27b579ed02a6b3d04c4c33f3f2d56aa5858e6adad399aba4c59"
     },
     "h_c_release": {
       "file": "art/history/c_release.webp",
@@ -929,7 +939,8 @@
       "source": "https://web.poecdn.com/public/news/2017-10-24/ChrisHorrorReef.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/2392544",
       "kind": "photo",
-      "caption": "Chris in the Hawaiian shirt, late 2013"
+      "caption": "Chris in the Hawaiian shirt, late 2013",
+      "sha256": "171fa46f0be08130836444b24820550566391a96d681f783d9ba28d4f0114b6d"
     },
     "h_e_henderson": {
       "file": "art/history/e_henderson.webp",
@@ -938,7 +949,8 @@
       "source": "https://web.poecdn.com/public/news/2022-10-06/Office/1.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/3316898",
       "kind": "photo",
-      "caption": "The Henderson office, 2022"
+      "caption": "The Henderson office, 2022",
+      "sha256": "45509b50644d7c7916566c0259c0a9e77f6a3a75f4f10d71fefc61515f50d29b"
     },
     "h_e_cats": {
       "file": "art/history/e_cats.webp",
@@ -947,7 +959,8 @@
       "source": "https://web.poecdn.com/public/news/01-04-2015/cats.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/1233642",
       "kind": "photo",
-      "caption": "The cats patch, April 2015"
+      "caption": "The cats patch, April 2015",
+      "sha256": "404248705e71cd084e745781edcd3b532b410be23379d93f96e639ae039c2ae2"
     },
     "h_e_xbox": {
       "file": "art/history/e_xbox.webp",
@@ -956,7 +969,8 @@
       "source": "https://web.poecdn.com/public/news/19-01-2016/Screenshot1.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/1821330",
       "kind": "photo",
-      "caption": "Path of Exile on Xbox One, 2017"
+      "caption": "Path of Exile on Xbox One, 2017",
+      "sha256": "c15e4afc84bf1bff05997dcc9bb32ed2378a6a9f378f82177ab71b6ac319f146"
     },
     "h_e_exilecon19": {
       "file": "art/history/e_exilecon19.webp",
@@ -965,7 +979,8 @@
       "source": "https://web.poecdn.com/public/news/2019-11-19/0H9A8575.JPG",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/2679082",
       "kind": "photo",
-      "caption": "Path of Exile 2 revealed, ExileCon 2019"
+      "caption": "Path of Exile 2 revealed, ExileCon 2019",
+      "sha256": "c0be2588fa79fc973c6a03ebe8948dd752b0abeda0b909a4c8aa5618b98bdadd"
     },
     "h_e_exilecon23": {
       "file": "art/history/e_exilecon23.webp",
@@ -974,7 +989,8 @@
       "source": "https://web.poecdn.com/public/news/2023-08-01/KeynoteChris.png",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/3408264",
       "kind": "photo",
-      "caption": "The ExileCon 2023 keynote"
+      "caption": "The ExileCon 2023 keynote",
+      "sha256": "8f83fea1c02ad1ea61187380db9492e1a0f2b87cf5cce994a2003292c02acaf4"
     },
     "h_c_con26": {
       "file": "art/history/c_con26.webp",
@@ -983,7 +999,8 @@
       "source": "https://i.ytimg.com/vi/2UNC9EkMWHY/maxresdefault.jpg",
       "sourcePage": "https://www.youtube.com/watch?v=2UNC9EkMWHY",
       "kind": "photo",
-      "caption": "The founders roundtable, ExileCon 2026"
+      "caption": "The founders roundtable, ExileCon 2026",
+      "sha256": "7c214ed09214bb9e085af5982730a0a9c08c5ea97b71067c869e7b86b34f9d08"
     },
     "h_e_erik": {
       "file": "art/history/e_erik.webp",
@@ -992,7 +1009,8 @@
       "source": "https://web.archive.org/web/20110514052243im_/http://www.grindinggear.com/dev_diary_pax/5.jpg",
       "sourcePage": "https://web.archive.org/web/20110514052243/http://pathofexile.com/news/2011-03-01/dev-diary-pax",
       "kind": "photo",
-      "caption": "Erik Olofsson at PAX, 2010"
+      "caption": "Erik Olofsson at PAX, 2010",
+      "sha256": "c7e412e7d435482b9b9beef35a0033d47e24a51d26e7adab443ad9fa0bcc971e"
     },
     "h_e_gems": {
       "file": "art/history/e_gems.webp",
@@ -1001,7 +1019,8 @@
       "source": "https://web.archive.org/web/20100906082704im_/http://pathofexile.com/image/gems/swordconnections.png",
       "sourcePage": "https://web.archive.org/web/20100906082704/http://pathofexile.com/world/skills",
       "kind": "photo",
-      "caption": "Linked sockets on a sword, 2010"
+      "caption": "Linked sockets on a sword, 2010",
+      "sha256": "151d3835a5921c9469f2d9256c44557382dbee82aae33e1b63ae68da940d6be3"
     },
     "h_e_d3": {
       "file": "art/history/e_d3.webp",
@@ -1010,7 +1029,8 @@
       "source": "https://web.poecdn.com/public/chris/ChrisWilsonandJayWilson.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/307190",
       "kind": "photo",
-      "caption": "Chris Wilson and Jay Wilson, GDC 2013"
+      "caption": "Chris Wilson and Jay Wilson, GDC 2013",
+      "sha256": "1fa6855bc359c10aa62fd1359cd015a9670f80d668ca8f4f1bac3599a35a44cb"
     },
     "h_e_phones": {
       "file": "art/history/e_phones.webp",
@@ -1020,7 +1040,11 @@
       "source": "https://upload.wikimedia.org/wikipedia/commons/8/84/BlizzCon_2018_Opening%2C_broadcast_at_Lucca_Comics_%26_Games_02.jpg",
       "sourcePage": "https://commons.wikimedia.org/wiki/File:BlizzCon_2018_Opening,_broadcast_at_Lucca_Comics_%26_Games_02.jpg",
       "kind": "photo",
-      "caption": "BlizzCon 2018 opening, screened in Lucca"
+      "caption": "BlizzCon 2018 opening, screened in Lucca",
+      "sha256": "4876439012f1aa220c88a86e95f59d26d17f3e7ad58ee9b75cdf463e9e30b55e",
+      "creatorUrl": "https://commons.wikimedia.org/wiki/User:Syrio",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "changes": "Resized and converted from JPEG to WebP. This version is distributed under CC BY-SA 4.0."
     },
     "h_e_gamescom": {
       "file": "art/history/e_gamescom.webp",
@@ -1029,7 +1053,8 @@
       "source": "https://web.poecdn.com/public/news/2026-09-07/Booth_1.jpg",
       "sourcePage": "https://www.pathofexile.com/forum/view-thread/4002197",
       "kind": "photo",
-      "caption": "The Path of Exile 2 booth, gamescom 2026"
+      "caption": "The Path of Exile 2 booth, gamescom 2026",
+      "sha256": "c98717b1464fbe95a8504deeafb2ad4a824ba4058f7483ad01fdcfea7afea32f"
     }
   },
   "background": "affliction",

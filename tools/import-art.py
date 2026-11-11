@@ -168,7 +168,17 @@ def main():
         slots += [slot for slot in ("background", "title", "logo") if catalog[slot] == key]
         member = "<br>Archive member: " + escape(asset["archiveMember"]) if asset.get("archiveMember") else ""
         if asset["kind"] == "photo":
-            member += "<br>Published by " + escape(asset["creator"]) + (", " + escape(asset["licence"]) if asset.get("licence") else "")
+            creator = escape(asset["creator"])
+            if asset.get("creatorUrl"):
+                creator = '<a href="' + escape(asset["creatorUrl"]) + '">' + creator + '</a>'
+            member += "<br>Credit: " + creator
+            if asset.get("licence"):
+                licence = escape(asset["licence"])
+                if asset.get("licenceUrl"):
+                    licence = '<a href="' + escape(asset["licenceUrl"]) + '">' + licence + '</a>'
+                member += ", " + licence
+            if asset.get("changes"):
+                member += "<br>" + escape(asset["changes"])
         rows.append('<tr><td><a href="../' + escape(asset["file"]) + '">' + escape(asset["title"]) + '</a></td><td>'
                     + escape(", ".join(slots)) + '</td><td><a href="' + escape(asset["sourcePage"]) + '">Source page</a> · <a href="'
                     + escape(asset["source"]) + '">Original asset</a>' + member + '</td></tr>')

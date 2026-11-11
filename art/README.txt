@@ -1,7 +1,9 @@
 PICTURE SLOTS
 
-GGG artwork is bundled in art/ggg. credits.html lists every source and use.
+GGG artwork is bundled in art/ggg; historic pictures in art/history.
+credits.html lists every source, creator and licence where stated.
 sources.json is the source catalog; rebuild with python tools/import-art.py (Pillow required).
+The photos map selects historic card pictures; their captions and source links appear in game.
 manifest.js maps pictures to slots and takes precedence over automatic file-name lookup.
 For unmapped slots, save art/<slot>.jpg, .png or .webp and reload the page.
 To replace bundled art, edit sources.json and rebuild, or edit manifest.js directly.

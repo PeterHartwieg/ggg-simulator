@@ -213,6 +213,21 @@ body.at-title #app { visibility: hidden; }
 .orb span { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; font: 600 32px var(--display); color: #fff; text-shadow: 0 1px 3px #000, 0 0 12px #000; }
 .orb .gi { position: absolute; left: 50%; bottom: 13%; z-index: 1; width: 18px; height: 18px; margin-left: -9px; color: #fff; opacity: .8; pointer-events: none; }
 .orb .gi svg { display: block; width: 100%; height: 100%; fill: currentColor; filter: drop-shadow(0 1px 2px #000); }
+/* Points promised on top of the level, such as the trailer's hype. */
+.orb u { position: absolute; left: 0; right: 0; background: repeating-linear-gradient(-45deg, rgba(150, 195, 255, .75) 0 4px, rgba(150, 195, 255, .25) 4px 8px); box-shadow: 0 -1px 0 rgba(200, 225, 255, .8); transition: bottom .8s cubic-bezier(.3, 1.3, .5, 1); }
+/* Crunch: the sanity globe pulses red for as long as it is on, and the flasks run hot. */
+.globe.drain::before { content: ""; position: absolute; inset: -3px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255, 80, 50, .9), 0 0 22px rgba(255, 70, 40, .8); animation: drainpulse 1.6s ease-in-out infinite; animation-delay: var(--d, 0ms); pointer-events: none; }
+@keyframes drainpulse { 0%, 100% { opacity: .15; } 50% { opacity: 1; } }
+.flask.hot .vial { box-shadow: 0 0 0 1px #000, 0 0 14px rgba(255, 140, 50, .75), inset 0 0 10px #000; border-color: #ffb061; }
+.flask.hot .vial .now { filter: brightness(1.25) saturate(1.25); }
+/* What a click changed: a number that rises from the thing it changed, or drops from the top bar. */
+#pops { position: fixed; inset: 0; z-index: 60; overflow: hidden; pointer-events: none; }
+.pop { position: absolute; transform: translate(-50%, -100%); font: 700 23px/1 var(--display); letter-spacing: .04em; white-space: nowrap; color: var(--bright); text-shadow: 0 0 5px #000, 0 1px 2px #000, 0 0 14px #000; animation: popup 1.6s ease-out forwards; }
+.pop.good { color: #9be88f; }
+.pop.bad { color: #ff8672; }
+.pop.down { animation-name: popdown; }
+@keyframes popup { 0% { opacity: 0; transform: translate(-50%, -40%) scale(.7); } 12% { opacity: 1; transform: translate(-50%, -110%) scale(1.15); } 22% { transform: translate(-50%, -120%) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -280%); } }
+@keyframes popdown { 0% { opacity: 0; transform: translate(-50%, -60%) scale(.7); } 12% { opacity: 1; transform: translate(-50%, 10%) scale(1.15); } 22% { transform: translate(-50%, 20%) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, 170%); } }
 @keyframes slosh { 0%, 100% { transform: translateX(-6%) rotate(-1.5deg); } 50% { transform: translateX(6%) rotate(1.5deg); } }
 
 .skills { display: flex; gap: 6px; align-items: flex-end; }
@@ -239,7 +254,7 @@ body.at-title #app { visibility: hidden; }
 @keyframes flicker { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12) translateY(-1px); } }
 
 .belt { display: flex; gap: 4px; align-items: flex-end; }
-.flask { position: relative; display: flex; flex-direction: column; align-items: center; width: 68px; padding-top: 9px; }
+.flask { position: relative; display: flex; flex-direction: column; align-items: center; width: 80px; padding-top: 9px; }
 .flask.locked { filter: grayscale(1); opacity: .28; }
 .flask::before { content: ""; position: absolute; top: 0; left: 50%; width: 16px; height: 11px; margin-left: -8px; border-radius: 3px 3px 0 0; background: linear-gradient(90deg, #5a431f, #d3b678 45%, #6a5126); border: 1px solid #120d08; }
 .flask kbd { left: 50%; top: 50px; margin-left: -19px; }
@@ -251,6 +266,8 @@ body.at-title #app { visibility: hidden; }
 .vial i.cost { background: repeating-linear-gradient(135deg, #e02a1c 0 4px, #8a140c 4px 8px); box-shadow: 0 0 8px rgba(224, 42, 28, .8); opacity: .95; }
 .vial i.drained { background: #ff4a30; box-shadow: 0 0 12px #ff4a30; transform-origin: bottom; }
 @keyframes spill { 0% { opacity: 1; transform: none; } 30% { opacity: 1; } 100% { opacity: 0; transform: scaleY(0); } }
+/* New hires arriving on a flask. */
+@keyframes joined { 0% { box-shadow: 0 0 0 1px #000, 0 0 18px rgba(241, 220, 167, .95), inset 0 0 10px #000; border-color: var(--gold-hi); } 100% { box-shadow: 0 0 0 1px #000, 0 4px 10px rgba(0, 0, 0, .7), inset 0 0 10px #000; } }
 /* The flask that gave up a point to another one. */
 @keyframes gave { 0% { box-shadow: 0 0 0 1px #000, 0 0 16px rgba(224, 98, 92, .95), inset 0 0 10px #000; border-color: #ff6a55; } 100% { box-shadow: 0 0 0 1px #000, 0 4px 10px rgba(0, 0, 0, .7), inset 0 0 10px #000; } }
 .vial em { position: absolute; left: 0; right: 0; bottom: 83.3%; height: 1px; background: rgba(255, 255, 255, .9); box-shadow: 0 0 4px #fff; z-index: 1; }
@@ -265,7 +282,7 @@ body.at-title #app { visibility: hidden; }
 .flask.low .vial { animation: lowflask 1.6s ease-in-out infinite; }
 @keyframes lowflask { 50% { box-shadow: 0 0 0 1px #000, 0 0 12px rgba(224, 98, 92, .8), inset 0 0 10px #000; } }
 .flask .ctl { display: flex; align-items: center; gap: 3px; margin-top: 3px; }
-.flask .ctl span { min-width: 14px; text-align: center; color: var(--gold-hi); font: 600 16px/1 var(--display); }
+.flask .ctl span { min-width: 32px; text-align: center; color: var(--gold-hi); font: 600 15px/1 var(--display); white-space: nowrap; }
 .flask .ctl .btn { min-height: 19px; padding: 0 6px; line-height: 1; }
 
 .xp { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: #000; border-top: 1px solid #2a2117; }
@@ -395,11 +412,11 @@ body.at-title #app { visibility: hidden; }
   .skill svg { width: 22px; height: 22px; }
   .skill b { font-size: 11px; }
   .belt { gap: 2px; }
-  .flask { width: 58px; }
+  .flask { width: 68px; }
   .flask small { font-size: 11px; }
   .flask .ctl { gap: 1px; }
   .flask .ctl .btn { padding: 0 5px; }
-  .flask .ctl span { min-width: 12px; font-size: 14px; }
+  .flask .ctl span { min-width: 27px; font-size: 13px; }
   .vial { width: 28px; height: 42px; }
   .flask kbd { top: 38px; margin-left: -16px; }
   .title-box { padding: 12px; }
@@ -419,7 +436,8 @@ body.at-title #app { visibility: hidden; }
   #hud .orb span { font-size: 17px; }
   #hud .orb .gi { width: 10px; height: 10px; margin-left: -5px; bottom: 8%; }
   #hud .belt { gap: 0; }
-  #hud .flask { width: 46px; }
+  #hud .flask { width: 51px; }
+  #hud .flask .ctl span { min-width: 0; font-size: 11px; }
   #hud .flask small { font-size: 10px; }
   #hud .flask .ctl .btn { padding: 0 3px; }
   .eggs, .grid { grid-template-columns: 1fr 1fr; }

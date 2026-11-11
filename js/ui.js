@@ -99,14 +99,14 @@
     return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.4"/><circle cx="15" cy="10" r="1.4"/>' +
       '<path d="M8 15.5q4 ' + k + ' 8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   }
-  function st(icon, value, extra, tip) {
-    return '<span class="st" data-tip="' + h(tip) + '">' + (icon || '') + '<b>' + value + '</b>' + (extra || '') + '</span>';
+  function st(icon, value, extra, tip, key) {
+    return '<span class="st"' + (key ? ' data-k="' + key + '"' : '') + ' data-tip="' + h(tip) + '">' + (icon || '') + '<b>' + value + '</b>' + (extra || '') + '</span>';
   }
   function renderTop() {
     var f = E.finance(S), ann = !!S.flags.announced;
     var html = '<button class="btn" data-act="brand" data-tip="Menu">&#9776;</button>' + (logoSrc ? mark('logo') : '');
     html += st('', U.fmtDate(S.week), '', 'Space pauses');
-    html += st(ICON.coin, U.money(S.money), '<small class="' + (f.net >= 0 ? 'up' : 'down') + '">' + (f.net >= 0 ? '+' : '') + U.money(f.net) + '</small>', 'Cash, and change per week');
+    html += st(ICON.coin, U.money(S.money), '<small class="' + (f.net >= 0 ? 'up' : 'down') + '">' + (f.net >= 0 ? '+' : '') + U.money(f.net) + '</small>', 'Cash, and change per week', 'cash');
     html += st(ICON.people, S.launchWeek >= 0 ? U.num(S.players) : '0', '', 'Players online');
     if (ann) html += '<span class="st mood" style="color:hsl(' + Math.round(S.mood * 1.2) + ',70%,55%)" data-tip="The subreddit: ' + h(label(D.text.moods, S.mood)) + '">' +
       '<span' + (S.mood < 45 ? ' class="down"' : '') + '>' + ICON.up + '</span></span>';
@@ -134,8 +134,10 @@
 
   /* ---------- the HUD ---------- */
 
-  function globe(cls, v, tip, icon) {
-    return '<div class="globe ' + cls + '" data-tip="' + h(tip) + '"><div class="orb"><i style="height:' + Math.round(v) + '%"></i><span>' + Math.round(v) + '</span>' +
+  /* more: points already promised on top of the level, drawn as a striped band. */
+  function globe(cls, v, tip, icon, more) {
+    var band = more ? '<u style="bottom:' + Math.round(v) + '%;height:' + Math.min(more, 100 - Math.round(v)) + '%"></u>' : '';
+    return '<div class="globe ' + cls + '" data-tip="' + h(tip) + '" style="--d:-' + (Date.now() % 1600) + 'ms"><div class="orb"><i style="height:' + Math.round(v) + '%"></i>' + band + '<span>' + Math.round(v) + '</span>' +
       '<em class="gi">' + icon + '</em></div></div>';
   }
   /* The HUD is rebuilt every tick. A one-shot effect remembers when it started, and each
@@ -163,6 +165,27 @@
       ICON[act] + '<b>' + name + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</button>';
   }
   function vialH(frac) { return U.clamp(frac / 1.2 * 100, 0, 100); }
+  /* What a click changed, as small numbers that rise from the things it changed. They live outside
+     the HUD, which is rebuilt every tick. Queued during the click and placed once the HUD is redrawn. */
+  var popQ = [], MINUS = '\u2212';
+  function pop(sel, text, cls) { popQ.push([sel, text, cls || '']); }
+  function flushPops() {
+    var q = popQ, box = $('pops');
+    popQ = [];
+    if (!q.length) return;
+    if (!box) { box = document.createElement('div'); box.id = 'pops'; document.body.appendChild(box); }
+    q.forEach(function (p) {
+      var el = document.querySelector(p[0]);
+      if (!el) return;
+      var r = el.getBoundingClientRect(), down = r.top < window.innerHeight / 2, d = document.createElement('div');
+      d.className = 'pop ' + p[2] + (down ? ' down' : '');
+      d.textContent = p[1];
+      d.style.left = (r.left + r.width / 2) + 'px';
+      d.style.top = (down ? r.bottom + 2 : r.top - 2) + 'px';
+      box.appendChild(d);
+      setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 1700);
+    });
+  }
   /* The request whose build button is under the pointer or has focus, if the player can afford it. */
   function previewCost() {
     if (!preview) return 0;
@@ -172,14 +195,14 @@
   }
   function renderHud() {
     var pr = E.projection(S), ann = !!S.flags.announced, heads = E.headcount(S), real = Math.round(E.parHeadcount(S.week));
-    var html = globe('life', S.sanity, 'Team sanity. Crunch drains it.', face(S.sanity));
+    var html = globe('life' + (S.crunch ? ' drain' : ''), S.sanity, 'Team sanity. Crunch drains it.', face(S.sanity));
 
     var can = E.canHire(S), full = heads >= E.capacity(S), next = E.nextOffice(S), n = Math.min(5, Math.max(1, can));
     var blocked = S.hiresLeft <= 0 || S.money < E.hireCost(S, 1) || (full && (!next || S.money < next.cost));
     html += '<div class="skills">';
     html += skill('hire', 'hire' + (!blocked && heads < real * 0.9 ? ' need' : ''), blocked ? 'Hire' : 'Hire +' + n, heads + ' / ' + real,
       blocked ? (S.hiresLeft <= 0 ? 'No candidates left until the next release' : full ? 'No desks, no money for a bigger office' : 'Not enough cash')
-        : 'Your team / the real studio at this date. ' + U.money(E.hireCost(S, 1)) + ' per hire.', blocked);
+        : 'Your team / the real studio at this date. ' + U.money(E.hireCost(S, 1)) + ' per hire.' + (heads >= real ? ' Past the real size a hire adds half as much.' : ''), blocked);
     html += skill('crunch', S.crunch ? 'on' : '', 'Crunch', '', '+30% work, drains sanity');
     if (E.canMarket(S) || S.cyc.marketed) html += skill('market', S.cyc.marketed ? 'on' : '', 'Hype', '', '+12 hype at launch for ' + U.money(E.marketingCost(S)), S.cyc.marketed || S.money < E.marketingCost(S));
     if (S.flags.vaal) html += skill('vaal', '', 'Vaal', '', 'Corrupt this release. Better, bricked, or nothing.', !!S.cyc.vaaled);
@@ -187,8 +210,11 @@
     if (S.week >= dq._from && !(ds && ds.built != null)) html += skill('desync', '', 'Desync', ds && ds.clicks ? String(ds.clicks) : '', 'Fix desync. Keep pressing.');
     if (E.layoffShown(S)) html += skill('layoff', '', 'Layoff', '', 'Let a tenth of the studio go', !E.canLayoff(S));
     html += '</div><div class="belt">';
+    /* A flask's number is its share of the team, not a head count: everyone hired is split by these shares. */
+    var crew = E.crew(S);
     E.STREAMS.forEach(function (s, si) {
       var open = E.streamOpen(S, s), p = pr[s], now = open && p ? p.now : 0, proj = open && p ? p.proj : 0, extra = '';
+      var on = open ? crew[s] : 0, who = on >= 0.95 ? ' About ' + Math.round(on) + (Math.round(on) === 1 ? ' person.' : ' people.') : on > 0 ? ' Part of one person.' : '';
       if (open) firstSeen('f-' + s);
       if (s === 'content' && open) {
         var cost = previewCost();
@@ -196,14 +222,14 @@
         var dr = drainFx && fxStyle('drain', 'spill', 900);
         if (dr) extra += '<i class="drained" style="bottom:' + drainFx.to + '%;height:' + Math.max(0, drainFx.from - drainFx.to) + '%;' + dr + '"></i>';
       }
-      var glow = fxStyle('glow:f-' + s, 'firstglow', 1800), give = fxStyle('pip:' + s, 'gave', 650);
-      html += '<div class="flask f-' + s + (open ? '' : ' locked') + (open && proj < 0.7 ? ' low' : '') + '" data-tip="' + h(D.streams[s].what + (open ? ' On course for ' + pc(proj) + '.' : '')) + '"' + (glow ? ' style="' + glow + '"' : '') + '>' +
+      var glow = fxStyle('glow:f-' + s, 'firstglow', 1800), give = fxStyle('pip:' + s, 'gave', 650) || fxStyle('join:' + s, 'joined', 800);
+      html += '<div class="flask f-' + s + (open ? '' : ' locked') + (open && S.crunch ? ' hot' : '') + (open && proj < 0.7 ? ' low' : '') + '" data-tip="' + h(D.streams[s].what + (open ? ' On course for ' + pc(proj) + '.' + who : '')) + '"' + (glow ? ' style="' + glow + '"' : '') + '>' +
         '<kbd>' + (si + 1) + '</kbd><div class="vial"' + (give ? ' style="' + give + '"' : '') + '><i class="proj" style="height:' + vialH(proj) + '%"></i><i class="now" style="height:' + vialH(now) + '%"></i>' + extra + '<em></em></div>' +
         '<small>' + FLASK[s] + '</small>' +
-        '<div class="ctl"><button class="btn" data-act="pip" data-s="' + s + '" data-n="-1"' + (!open || S.alloc[s] <= 0 ? ' disabled' : '') + '>&minus;</button><span>' + S.alloc[s] + '</span>' +
+        '<div class="ctl"><button class="btn" data-act="pip" data-s="' + s + '" data-n="-1"' + (!open || S.alloc[s] <= 0 ? ' disabled' : '') + '>&minus;</button><span>' + Math.round(S.alloc[s] / E.PIPS * 100) + '%</span>' +
         '<button class="btn" data-act="pip" data-s="' + s + '" data-n="1"' + (!open ? ' disabled' : '') + '>+</button></div></div>';
     });
-    html += '</div>' + globe('mana', ann ? S.hype : 0, 'Hype for the next launch', ICON.market);
+    html += '</div>' + globe('mana', ann ? S.hype : 0, 'Hype for the next launch' + (S.cyc.marketed ? '. The trailer adds 12 on launch day.' : ''), ICON.market, ann && S.cyc.marketed ? 12 : 0);
     html += '<div class="xp" data-tip="Time until this release ships"><i style="width:' + (pr.elapsed * 100).toFixed(1) + '%"></i></div>';
     $('hud').innerHTML = html;
   }
@@ -589,17 +615,44 @@
     else if (a === 'mute') Snd.toggle();
     else if (a === 'brand') { brandClick(); return; }
     else if (a === 'hire') {
-      var before = S.office, got = E.hireMix(S, Math.min(5, Math.max(1, E.canHire(S))));
-      if (got) { Snd.play('click'); if (S.office !== before) drop('Moved to ' + h(D.offices[S.office].name), true); } else Snd.play('no');
+      var before = S.office, cash0 = S.money, got = E.hireMix(S, Math.min(5, Math.max(1, E.canHire(S))));
+      if (got) {
+        Snd.play('click');
+        pop('#hud [data-act=hire]', '+' + got, 'good');
+        pop('#top [data-k=cash]', MINUS + U.money(cash0 - S.money), 'bad');
+        if (S.office !== before) drop('Moved to ' + h(D.offices[S.office].name), true);
+        /* The flasks the new people went to light up. */
+        var cr = E.crew(S);
+        E.STREAMS.forEach(function (o) { if (E.streamOpen(S, o) && cr[o] > 0) fxAt['join:' + o] = Date.now(); });
+      } else Snd.play('no');
     }
     else if (a === 'pip') {
       var s = el.getAttribute('data-s'), had = JSON.parse(JSON.stringify(S.alloc));
       E.setPip(S, s, n); Snd.play('click');
       E.STREAMS.forEach(function (o) { if (o !== s && S.alloc[o] < had[o]) fxAt['pip:' + o] = Date.now(); });
     }
-    else if (a === 'crunch') { S.crunch = !S.crunch; Snd.play(S.crunch ? 'bad' : 'click'); }
-    else if (a === 'market') { if (E.marketing(S)) { Snd.play('cash'); drop('Trailer booked', true); } }
-    else if (a === 'layoff') { res = E.layoff(S); Snd.play(res ? 'bad' : 'no'); if (res) drop('&minus;' + res.gone + ' staff', true); }
+    else if (a === 'crunch') {
+      S.crunch = !S.crunch; Snd.play(S.crunch ? 'bad' : 'click');
+      pop('#hud .belt', S.crunch ? '+30% work' : 'Normal pace', S.crunch ? 'good' : '');
+      pop('#hud .globe.life', S.crunch ? MINUS + '1.7 a week' : 'Recovering', S.crunch ? 'bad' : 'good');
+    }
+    else if (a === 'market') {
+      var cash1 = S.money;
+      if (E.marketing(S)) {
+        Snd.play('cash');
+        pop('#hud .globe.mana', '+12 on launch day', 'good');
+        pop('#top [data-k=cash]', MINUS + U.money(cash1 - S.money), 'bad');
+      }
+    }
+    else if (a === 'layoff') {
+      res = E.layoff(S); Snd.play(res ? 'bad' : 'no');
+      if (res) {
+        pop('#hud [data-act=hire]', MINUS + res.gone, 'bad');
+        pop('#hud .globe.life', MINUS + '12', 'bad');
+        if (S.flags.announced) pop('#top .st.mood', MINUS + '6', 'bad');
+        E.STREAMS.forEach(function (o) { if (E.streamOpen(S, o) && S.alloc[o] > 0) fxAt['pip:' + o] = Date.now(); });
+      }
+    }
     else if (a === 'vaal') { res = E.vaal(S); if (res) result('Vaal or no balls', res.title, res); }
     else if (a === 'desync') {
       res = E.clickRequest(S, 'desync');
@@ -616,6 +669,7 @@
     }
     else if (a === 'reqclick') { res = E.clickRequest(S, id); if (res) { reqMsg[id] = res.text; Snd.play('no'); } }
     render();
+    flushPops();
   }
 
   function bind() {
@@ -730,7 +784,7 @@
   UI.resume = function () {
     try { S = JSON.parse(load(SAVE)); } catch (e) { S = null; }
     if (!S || S.v !== 1) { UI.newGame(); return; }
-    start(); Stats.resume();
+    start(); Stats.resume(S);
   };
   UI.title = function () {
     var saved = null, depth = UI.depth();
