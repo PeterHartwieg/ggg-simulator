@@ -1,0 +1,18 @@
+// Hosting on Cloudflare Workers as static assets. There is no Worker script and no build step:
+// `npx wrangler deploy` uploads this folder, minus everything listed in .assetsignore.
+{
+  "name": "ggg-simulator",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": ".",
+    "not_found_handling": "404-page"
+  },
+  // Custom domains: wrangler creates the DNS records and certificates in the zone.
+  "routes": [
+    { "pattern": "ggg-simulator.com", "custom_domain": true },
+    { "pattern": "www.ggg-simulator.com", "custom_domain": true }
+  ],
+  // No preview hosts: the site is only reachable on the two domains above.
+  "workers_dev": false,
+  "preview_urls": false
+}
