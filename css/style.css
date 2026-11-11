@@ -70,9 +70,9 @@ body.at-title #app { visibility: hidden; }
 #rel::before { content: ""; position: absolute; left: 50%; top: -30px; width: 720px; height: calc(100% + 90px); margin-left: -360px; background: radial-gradient(ellipse 50% 50% at 50% 48%, rgba(0, 0, 0, .82), rgba(0, 0, 0, .5) 45%, rgba(0, 0, 0, 0)); pointer-events: none; }
 #rel > * { position: relative; }
 #rel h1 { font: 600 52px/1.05 var(--display); letter-spacing: .04em; color: var(--unique); text-shadow: 0 2px 0 #000, 0 0 34px rgba(224, 128, 61, .45); margin: 4px 0 6px; }
-#rel h1 small { display: inline; font-size: 19px; margin-right: 12px; color: var(--gold-dim); letter-spacing: .12em; }
+#rel h1 small { display: inline; font-size: 19px; margin-right: 12px; color: var(--gold-hi); letter-spacing: .12em; text-shadow: 0 1px 2px #000, 0 0 6px #000, 0 0 14px rgba(0, 0, 0, .9); }
 #rel .when { color: var(--gold); font: 600 15px var(--display); letter-spacing: .14em; text-shadow: 0 1px 3px #000; }
-.release-logo { display: block; width: min(400px, 68vw); height: 220px; object-fit: contain; margin: 0 auto 6px; transition: height .35s ease; animation: arrive .9s cubic-bezier(.2, .9, .3, 1); }
+.release-logo { display: block; width: min(400px, 68vw); height: 220px; object-fit: contain; margin: 0 auto 6px; animation: arrive .9s cubic-bezier(.2, .9, .3, 1); }
 .clear { filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .9)) drop-shadow(0 0 22px rgba(255, 190, 110, .16)); }
 .solid { mix-blend-mode: screen; -webkit-mask-image: radial-gradient(ellipse 51% 51% at 50% 50%, #000 74%, transparent 100%); mask-image: radial-gradient(ellipse 51% 51% at 50% 50%, #000 74%, transparent 100%); }
 @keyframes arrive { from { transform: scale(1.12); filter: brightness(2.2); } }
@@ -107,7 +107,7 @@ body.at-title #app { visibility: hidden; }
 .c-head::after { right: 12px; transform: scaleX(-1); }
 .c-head b { display: block; font: 600 24px/1.15 var(--display); color: var(--hc); letter-spacing: .04em; text-shadow: 0 1px 2px #000, 0 0 16px rgba(var(--hb), .9); }
 .c-head small { display: block; font: 600 15px/1.2 var(--display); color: var(--hc); opacity: .82; letter-spacing: .08em; }
-.c-pic { display: block; width: 100%; max-height: 170px; object-fit: cover; object-position: center 22%; border-bottom: 1px solid #000; }
+.c-pic { display: block; width: 100%; height: 170px; object-fit: cover; object-position: center 22%; border-bottom: 1px solid #000; }
 .c-pic.contain { height: 140px; object-fit: contain; padding: 12px; background: radial-gradient(ellipse at center, #1a1410, #050403); }
 .c-banner { position: relative; height: 168px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #050403 center / cover no-repeat; border-bottom: 1px solid #000; }
 .c-banner.ls { background-position: center 15%; }
@@ -123,6 +123,7 @@ body.at-title #app { visibility: hidden; }
 .c-timer { height: 3px; background: #000; }
 .c-timer i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold-hi)); transform-origin: left; animation: drain linear forwards; }
 @keyframes drain { to { transform: scaleX(0); } }
+#card.frozen .c-timer i { animation-play-state: paused; }
 .flip s { display: block; color: var(--dim); }
 .flip b { font: 600 18px/1.25 var(--display); color: var(--corrupt); letter-spacing: .03em; text-shadow: 0 0 14px rgba(224, 42, 28, .45); }
 .picked { font: 600 17px var(--display); color: var(--gold); letter-spacing: .1em; }
@@ -279,7 +280,7 @@ body.at-title #app { visibility: hidden; }
 @media (max-height: 820px) and (min-width: 1101px) {
   .release-logo { height: 150px; }
   #stage.carded .release-logo { height: 60px; }
-  .c-pic { max-height: 110px; }
+  .c-pic { height: 110px; }
   .c-pic.contain { height: 95px; }
   .c-banner { height: 116px; }
   .banner-logo { height: 108px; }
@@ -290,13 +291,15 @@ body.at-title #app { visibility: hidden; }
 
 /* Narrow windows: the stage on top, the HUD pinned to the bottom, the subreddit a scroll away. */
 @media (max-width: 1100px) {
+  html { scroll-padding: var(--top-h, 44px) 0 var(--hud-h, 110px); }
   body { overflow: auto; }
   #app { height: auto; min-height: 100vh; }
+  #top { position: sticky; top: 0; z-index: 6; }
   #main, #main.solo { grid-template-columns: 1fr; }
   #main.solo #side { display: none; }
   #stage { min-height: max(380px, calc(100vh - 190px)); padding-bottom: 12px; }
   .card .c-body { max-height: none; }
-  #drops { max-width: 220px; }
+  #drops { position: fixed; left: 10px; top: calc(var(--top-h, 44px) + 30px); z-index: 7; max-width: 220px; }
   #side { max-height: 340px; border-left: 0; border-top: 1px solid var(--line); }
   #hud { position: sticky; bottom: 0; z-index: 5; gap: 8px; padding: 8px 8px 14px; }
   #top { flex-wrap: wrap; gap: 4px 14px; padding: 5px 10px; }

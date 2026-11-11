@@ -372,12 +372,26 @@
         chip((fx.staff[d] > 0 ? '+' : '') + fx.staff[d] + ' ' + D.depts[d].short, fx.staff[d] > 0);
       });
     }
-    if (fx.staffPct) {
-      E.DEPTS.forEach(function (d) {
-        var min = (d === 'code' || d === 'design') ? 1 : 0;
-        S.staff[d] = Math.max(min, Math.round(S.staff[d] * (1 + fx.staffPct)));
-      });
-      chip(Math.round(fx.staffPct * 100) + '% staff', fx.staffPct > 0);
+    if (fx.staffPct > 0) {
+      E.DEPTS.forEach(function (d) { S.staff[d] = Math.round(S.staff[d] * (1 + fx.staffPct)); });
+      chip('+' + Math.round(fx.staffPct * 100) + '% staff', true);
+    } else if (fx.staffPct < 0) {
+      /* Cut on the whole studio, so a small team still loses someone. Each department
+         keeps its share, and there is always one coder and one designer left. */
+      var before = E.headcount(S), cut = Math.max(1, before - Math.round(before * (1 + fx.staffPct))), gone = 0;
+      var keep = {}, aim = {};
+      E.DEPTS.forEach(function (d) { keep[d] = (d === 'code' || d === 'design') ? 1 : 0; aim[d] = (S.staff[d] || 0) * (1 + fx.staffPct); });
+      while (gone < cut) {
+        var pick = null, over = -1e9;
+        E.DEPTS.forEach(function (d) {
+          if ((S.staff[d] || 0) <= keep[d]) return;
+          var o = S.staff[d] - aim[d];
+          if (o > over) { over = o; pick = d; }
+        });
+        if (!pick) break;
+        S.staff[pick]--; gone++;
+      }
+      if (gone) chip('-' + gone + ' staff', false);
     }
     if (fx.flags) Object.keys(fx.flags).forEach(function (k) { S.flags[k] = fx.flags[k]; });
     if (fx.unlock) fx.unlock.forEach(function (k) { unlock(S, k); });

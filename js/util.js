@@ -25,6 +25,11 @@
     var d = U.dateOf(week);
     return (withDay ? d.getUTCDate() + ' ' : '') + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
   };
+  /* A calendar date such as '2010-06-01', moved by a number of weeks, as "1 Jun 2010". */
+  U.fmtDay = function (iso, weeks) {
+    var p = String(iso).split('-'), d = new Date(Date.UTC(+p[0], (+p[1] || 1) - 1, (+p[2] || 1) + 7 * (weeks || 0)));
+    return d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
+  };
   U.monthOf = function (week) { return U.dateOf(week).getUTCMonth(); };
 
   U.money = function (n) {

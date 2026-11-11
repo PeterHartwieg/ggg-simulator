@@ -4,6 +4,8 @@
   var D = root.GGG.data;
   function inCycle(id) { return function (S) { return D.cycles[S.ci].id === id; }; }
   function dropHero(S, id) { var i = S.heroes.indexOf(id); if (i >= 0) S.heroes.splice(i, 1); }
+  /* The card has just said the game is ready, so production does not get to say it is not. */
+  function ready(S) { S.cyc.asked = true; }
 
   D.events = [
     {
@@ -444,9 +446,9 @@
       text: "Early access was dated for 15 November. The game is ready. The account system that carries purchases across both games and the consoles is not, and nobody has load-tested it.",
       reality: "GGG delayed early access by three weeks to 6 December 2024 for backend work, and pushed Path of Exile 1's 3.26 into 2025.",
       choices: [
-        { label: "Delay to 6 December and say why", fx: { mood: -3, debt: -6 },
+        { label: "Delay to 6 December and say why", fx: { mood: -3, debt: -6, fn: ready },
           result: "Three weeks. Also, the next league for the old game moves to next year. That part of the post gets the most comments." },
-        { label: "Hold the 15th", fx: { delay: -3, debt: 12, mood: 2 }, result: "You launch on the 15th with a login system nobody has stress-tested. Good luck." }
+        { label: "Hold the 15th", fx: { delay: -3, debt: 12, mood: 2, fn: ready }, result: "You launch on the 15th with a login system nobody has stress-tested. Good luck." }
       ]
     },
     {

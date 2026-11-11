@@ -31,7 +31,7 @@
         text: "The game will be online only, so it needs a business model. Which one?",
         choices: [
           { label: "Free to play. Sell looks, never power.", hint: "Ethical microtransactions. Whatever those are.", fx: { vision: 8, flags: { f2p: 1 } },
-            result: "Free game, paid cosmetics, no pay-to-win. In 2010 most free games sell power, so this sounds either principled or broke. You are both.",
+            result: "Free game, paid cosmetics, no pay-to-win. Most free games sell power, so this sounds either principled or broke. You are both.",
             reality: "Asked in 2026 what he was quietly proud of, Chris Wilson named launching free to play without pay-to-win when most competitors were pay-to-win." },
           { label: "Box price, $40", fx: { hype: -4, moneyW: -4, flags: { f2p: 1 } },
             result: "You email eleven publishers. Two reply. One asks whether New Zealand has broadband. You go free to play after all, four weeks poorer." },
@@ -66,7 +66,7 @@
       blurb: "Open beta. Free for everyone, the first half of Act 3, the cosmetic shop opens, and you are promising this is the last time anyone's characters get wiped. About fifty thousand people are waiting to download a 1.5 GB patch the second it goes up.",
       reality: "Open beta launched 23 January 2013. Concurrency reached 69,850 before the realm fell over. The closed beta supporter packs ended the same day, having raised about US$2.5 million in 35 weeks.",
       dilemma: {
-        text: "Launch is tomorrow. The content delivery network is on the cheap plan. Upgrade it?",
+        text: "Open beta means everyone downloads the client on day one. The content delivery network is on the cheap plan. Upgrade it?",
         choices: [
           { label: "It will be fine", fx: { mood: -5, sanity: -6, debt: 5, egg: 'cdn' },
             result: "Fifty thousand people download 1.5 GB at once. The CDN chokes. The realm falls over several times and a login bug forces a shutdown. Developers answer support tickets by hand.",
@@ -107,7 +107,7 @@
       reality: "1.0 launched on Steam on 23 October 2013 with a Steam peak of 34,371. By December the studio had about 55 staff, four million accounts, GameSpot's PC Game of the Year and a profit. Chris called the profit a big relief.",
       onLaunch: { flags: { foundersPaid: 1 } },
       dilemma: {
-        text: "Release day. Do you put it on Steam?",
+        text: "Full release is coming. Do you put it on Steam?",
         choices: [
           { label: "Yes, same day", fx: { hype: 6, egg: 'steam' },
             result: "Steam takes its cut and sends you a crowd. From now on the whole internet can watch your player count fall three weeks after every launch, on a public graph." },
@@ -481,7 +481,7 @@
       blurb: "Step through a mirror and a fog rolls over the map. Everything in it gets harder and pays better the longer you keep up. Launch is Friday the 13th of March 2020.",
       reality: "Delirium launched into a long DDoS attack that knocked about 40 servers offline. It still set an all-platform record of 237,160. New Zealand went into lockdown two weeks later.",
       dilemma: {
-        text: "Hours after launch, about forty servers drop offline. It is a DDoS attack.",
+        text: "Security expects a DDoS attack on launch night. About forty servers could drop offline. What is the plan?",
         choices: [
           { label: "All hands on the servers. Post updates every hour.", fx: { mood: 4, sanity: -6, egg: 'ddos' },
             result: "The team fights it through the night and posts as it goes. The league sets a concurrency record anyway." },
@@ -518,7 +518,7 @@
       blurb: "The ambitious lockdown project. A whole town of thieves with skills and voice lines, stealth, alarms, vaults. The Mac version and the Epic store launch are this month too. Auckland has just gone back into restrictions.",
       reality: "Heist launched 18 September 2020 with crashes, broken skills and quest blockers. GGG billed it as its ambitious lockdown project.",
       dilemma: {
-        text: "It is two weeks out and Heist is not done.",
+        text: "The date is set and Heist is nowhere near done.",
         choices: [
           { label: "Ship it", fx: { polish: -0.2, mood: -5, sanity: -6 },
             result: "Doors do not open. Rogues stand in doorways. A quest blocks itself. The hotfixes work their way down the alphabet." },
@@ -693,7 +693,7 @@
       blurb: "A dark wood inside every map. Run in, collect coloured wisps, come out and watch them make the rest of the map absurd. It launches straight into the New Zealand summer holiday.",
       reality: "Affliction was loved and had the best day-7 retention of its period. December leagues run into the NZ summer break, and players know it.",
       dilemma: {
-        text: "Wisps multiply loot with no real ceiling. The office is empty until mid-January.",
+        text: "Wisps multiply loot with no real ceiling. After launch the office is empty until mid-January.",
         choices: [
           { label: "Leave it. Enjoy the beach.", fx: { mood: 9, vision: -8, ret: 1.15, sanity: 6, egg: 'beach' },
             result: "Players stack wisps until a single map drops more than a week used to. Retention is the best in years. You come back from holiday and decide not to look at the economy." },
@@ -816,7 +816,7 @@
       reality: "Players broke the 0.4 league with temple farming over the summer break. Jonathan Rogers said it ruined his Christmas and that he enjoyed nerfing it mid-league.",
       dilemma: {
         canon: 1,
-        text: "Players find a temple layout that prints currency. It is the 23rd of December.",
+        text: "Testers find a temple layout that prints currency. Players will find it by Christmas.",
         choices: [
           { label: "Let it ride until January", fx: { mood: 5, vision: -6, sanity: 5 },
             result: "The economy inflates for three weeks. Jonathan thinks about it over Christmas dinner anyway." },

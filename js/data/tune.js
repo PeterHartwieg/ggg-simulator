@@ -117,7 +117,18 @@
       { t: "Jonathan overruled you. He will explain why in a two-hour interview.", y: [2024, 2099] },
       { t: "Jonathan nerfed your decision mid-league and enjoyed doing it.", y: [2025, 2099] },
       { t: "Jonathan dodge-rolled your suggestion. Mark's character died to it on stage.", y: [2024, 2099] },
-      { t: "Jonathan says your idea ruined his Christmas. It is gone now.", y: [2025.9, 2099] }
+      { t: "Jonathan says your idea ruined his Christmas. It is gone now.", y: [2025.9, 2099] },
+      // The first years and the last ones had too few lines and repeated.
+      { t: "Chris overruled you from the garage. The garage has spoken.", y: [2006, 2011] },
+      { t: "Chris checked how Diablo II did it. Diablo II did not do it your way.", y: [2006, 2014] },
+      { t: "Jonathan compiled your idea. It did not link.", y: [2006, 2013] },
+      { t: "Jonathan says there is no budget for that. There is no budget for anything.", y: [2006, 2012] },
+      { t: "Erik painted over your decision. It is a corpse on a beach now.", y: [2007, 2014] },
+      { t: "Mark answered your question exactly as asked. The answer was no.", y: [2014, 2099] },
+      { t: "Mark and Jonathan discussed your idea on stage for forty minutes. It is still no.", y: [2024, 2099] },
+      { t: "Jonathan says that is solved in Path of Exile 1.", y: [2024.9, 2099] },
+      { t: "Jonathan added your idea to early access. Full release is whenever.", y: [2024.9, 2099] },
+      { t: "Chris left a note before he went. It says no.", y: [2025, 2099] }
     ],
     late: [
       "You took too long. History got bored and decided for you.",

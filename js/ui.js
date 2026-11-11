@@ -4,8 +4,10 @@
   'use strict';
   var GGG = window.GGG, U = GGG.util, D = GGG.data, E = GGG.engine, A = GGG.art, Snd = GGG.audio;
   var UI = GGG.ui = {};
-  var S = null, speed = 1, paused = false, busy = false, pend = null, timer = null, cardTimer = null, modal = null;
-  var logoSrc = null, titleSrc = null, bgFor = null, bgHold = null, bgLayer = 0, logoClicks = 0, reqMsg = {}, lastFlip = '';
+  var S = null, speed = 1, paused = false, busy = false, pend = null, timer = null, modal = null;
+  var logoSrc = null, titleSrc = null, bgFor = null, bgHold = null, bgLayer = 0, logoClicks = 0, logoFirst = 0, logoTimer = null, reqMsg = {}, lastFlip = '';
+  /* The card on the stage has one clock. It stops while the game is paused or the menu is open. */
+  var cardTimer = null, cardFn = null, cardLeft = 0, cardAt = 0, cardSeq = 0, cardWait = false, choiceAt = 0;
   var SAVE = 'ggg-sim-save-v1', DEPTH = 'ggg-sim-depth', TICK_MS = 1000, DECIDE_MS = 45000;
   var KIND = { proto: 'Milestone', beta: 'Beta', release: 'Release', league: 'Challenge league', expansion: 'Expansion', poe2: 'Path of Exile 2', con: 'Convention', sim: 'Side project' };
   var FLASK = { content: 'Release', polish: 'QA', mtx: 'Shop', infra: 'Servers', future: 'Long game' };
@@ -22,13 +24,13 @@
   /* Bundled GGG artwork is mapped in art/manifest.js. Extra pictures can use slot names. */
   var EXT = ['.jpg', '.png', '.webp'], found = {};
   function skin(key) { return GGG.artOverrides && GGG.artOverrides[key]; }
-  function probe(name, cb) {
+  function probe(name, cb, fail) {
     var named = skin('images');
     if (named && named[name]) { cb(named[name]); return; }
-    if (name in found) { if (found[name]) cb(found[name]); return; }
+    if (name in found) { if (found[name]) cb(found[name]); else if (fail) fail(); return; }
     var i = 0;
     (function next() {
-      if (i >= EXT.length) { found[name] = null; return; }
+      if (i >= EXT.length) { found[name] = null; if (fail) fail(); return; }
       var src = 'art/' + name + EXT[i++], im = new Image();
       im.onload = function () { found[name] = src; cb(src); };
       im.onerror = next;
@@ -108,7 +110,7 @@
     $('rel').setAttribute('data-key', key);
     $('rel').className = logo ? 'with-logo' : '';
     $('rel').innerHTML = (logo ? logoImg(logo, 'release-logo') : '') +
-      '<h1><small>' + h(c.ver) + '</small>' + h(c.name) + '</h1><div class="when">' + U.fmtDate(ship, true) + '</div>';
+      '<h1><small>' + h(c.ver) + '</small>' + h(c.name) + '</h1><div class="when">' + U.fmtDay(c.date, S.cyc.delay) + '</div>';
   }
 
   /* ---------- the HUD ---------- */
@@ -199,7 +201,12 @@
 
   function render() {
     if (!S) return;
+    syncCard();
     renderTop(); renderRel(); renderHud(); renderReqs();
+    /* The narrow layout pins the top line and the HUD, and keeps drops and cards clear of both. */
+    var root = document.documentElement.style;
+    root.setProperty('--top-h', $('top').offsetHeight + 'px');
+    root.setProperty('--hud-h', $('hud').offsetHeight + 'px');
     /* Nobody has heard of the game yet, so there is no subreddit to show. */
     $('main').classList.toggle('solo', !S.flags.announced && !$('reqs').firstChild && !$('feed').firstChild);
     A.drawChart($('chart'), S);
@@ -222,23 +229,45 @@
   }
   var fadeTimer = null;
   /* why: the "what really happened" note, kept behind a small ? so it is there for whoever wants it. */
-  function setCard(html, cls, pic, why, clickable) {
-    clearTimeout(fadeTimer);
-    $('stage').className = 'carded ' + (cls || '');
-    $('card').innerHTML = '<div class="card ' + (cls || '') + '"' + (clickable ? ' data-act="cont"' : '') + '>' +
-      (why ? '<span class="why" data-tip="' + h(why) + '">?</span>' : '') + html + '</div>';
-    if (pic) {
-      var card = $('card').firstChild;
-      probe(pic, function (src) {
-        var contain = (skin('containImages') || []).indexOf(pic) !== -1;
-        if ($('card').firstChild === card && !card.querySelector('.c-pic')) card.insertAdjacentHTML('afterbegin', '<img class="c-pic' + (contain ? ' contain' : '') + '" src="' + h(src) + '" alt="">');
-      });
+  /* The card is built in one go, picture included, so nothing on it moves after it appears.
+     A picture not looked up yet is looked up first. then() runs once the card is on screen. */
+  function setCard(html, cls, pic, why, clickable, then) {
+    var seq = ++cardSeq;
+    function show(src) {
+      if (seq !== cardSeq) return;
+      cardWait = false;
+      clearTimeout(fadeTimer);
+      var contain = src && (skin('containImages') || []).indexOf(pic) !== -1;
+      $('stage').className = 'carded ' + (cls || '');
+      $('card').innerHTML = '<div class="card ' + (cls || '') + '"' + (clickable ? ' data-act="cont"' : '') + '>' +
+        (why ? '<span class="why" data-tip="' + h(why) + '">?</span>' : '') +
+        (src ? '<img class="c-pic' + (contain ? ' contain' : '') + '" src="' + h(src) + '" alt="">' : '') + html + '</div>';
+      if (then) then();
     }
+    if (!pic || srcOf(pic) || found[pic] === null) { show(pic && srcOf(pic)); return; }
+    cardWait = true;
+    probe(pic, show, function () { show(null); });
+  }
+  function frozen() { return paused || !!modal; }
+  function syncCard() {
+    var stop = frozen();
+    $('card').classList.toggle('frozen', stop);
+    if (!cardFn) return;
+    if (stop && cardTimer) { clearTimeout(cardTimer); cardTimer = null; cardLeft -= Date.now() - cardAt; }
+    else if (!stop && !cardTimer) { cardAt = Date.now(); cardTimer = setTimeout(fireCard, Math.max(0, cardLeft)); }
+  }
+  function armCard(fn, ms) { clearCard(); cardFn = fn; cardLeft = ms; syncCard(); }
+  function clearCard() { clearTimeout(cardTimer); cardTimer = null; cardFn = null; }
+  function fireCard() { var fn = cardFn; clearCard(); if (fn) fn(); }
+  /* Leaving the game: nothing on the old card may fire later and write the old game back. */
+  function leaveGame() {
+    clearCard(); clearTimeout(fadeTimer); clearTimeout(logoTimer);
+    cardSeq++; cardWait = false; pend = null; busy = false; logoClicks = 0;
   }
   function timerBar(ms) { return '<div class="c-timer"><i style="animation-duration:' + ms + 'ms"></i></div>'; }
-  function hold(ms) { busy = true; clearTimeout(cardTimer); cardTimer = setTimeout(release, ms); }
+  function hold(ms) { busy = true; armCard(release, ms); }
   function release() {
-    clearTimeout(cardTimer);
+    clearCard();
     busy = false;
     if (bgHold) { bgHold = null; if (S) renderRel(); }
     var c = $('card').firstChild;
@@ -266,17 +295,20 @@
     o.order = o.choices.map(function (c, i) { return i; }).sort(function () { return Math.random() - 0.5; });
     busy = true;
     Snd.play('event');
-    setCard(head(o.title) + '<div class="c-body"><p>' + h(lead(o.text, 2)) + '</p><div class="c-choices">' +
+    clearCard();
+    setCard(head(o.title) + '<div class="c-body"><p>' + h(o.text) + '</p><div class="c-choices">' +
       o.order.map(function (ri, di) { return '<button data-act="choice" data-n="' + di + '">' + h(o.choices[ri].label) + '</button>'; }).join('') +
-      '</div></div>' + timerBar(DECIDE_MS), o.canon == null ? 'free' : '', o.pic);
-    clearTimeout(cardTimer);
-    cardTimer = setTimeout(function () { decide(null); }, DECIDE_MS);
+      '</div></div>' + timerBar(DECIDE_MS), o.canon == null ? 'free' : '', o.pic, null, false, function () {
+      choiceAt = Date.now();
+      armCard(function () { decide(null); }, DECIDE_MS);
+      if (window.matchMedia && matchMedia('(max-width: 1100px)').matches) $('card').scrollIntoView({ block: 'nearest' });
+    });
   }
   function decide(di) {
     var o = pend;
     if (!o) return;
     pend = null;
-    clearTimeout(cardTimer);
+    clearCard();
     var late = di == null, real = late ? (o.canon != null ? o.canon : 0) : o.order[di], flip = null, wrong = null;
     if (o.canon != null && real !== o.canon) {
       wrong = o.choices[real];
@@ -297,8 +329,8 @@
     if (main.trim()) body += '<p>' + h(main) + '</p>';
     body += mods(out.chips);
     var ms = readTime((o.flip || '') + (o.late || '') + main);
-    setCard(head(o.title) + '<div class="c-body">' + body + '</div>' + timerBar(ms), o.cls, o.pic, out.reality, true);
-    hold(ms);
+    busy = true; clearCard();
+    setCard(head(o.title) + '<div class="c-body">' + body + '</div>' + timerBar(ms), o.cls, o.pic, out.reality, true, function () { hold(ms); });
   }
   function showInfo(kicker, title, res, pic) {
     showOutcome({ title: title, pic: pic, out: { text: res.text, chips: res.chips, reality: res.reality } });
@@ -376,12 +408,14 @@
     $('modal-root').innerHTML = '<div class="card modal ' + (o.cls || '') + '">' + (o.top || '') + head(o.title, o.sub) + '<div class="c-body">' + o.body + '</div><div class="c-foot">' +
       o.buttons.map(function (b) { return '<button class="btn ' + (b.cls || '') + '" data-m="' + b.act + '">' + h(b.label) + '</button>'; }).join('') + '</div></div>';
     $('modal-root').className = 'open';
+    blurChat();
+    syncCard();
   }
-  function closeModal() { $('modal-root').className = ''; $('modal-root').innerHTML = ''; modal = null; }
+  function closeModal() { $('modal-root').className = ''; $('modal-root').innerHTML = ''; modal = null; syncCard(); }
   function showMenu() {
     var got = Object.keys(S.eggs), total = Object.keys(D.eggs).length;
     openModal({
-      title: 'Still Sane, Founder?',
+      title: 'Still Sane, Founder?', dismiss: true,
       body: '<p class="picked">Secrets ' + got.length + ' / ' + total + '</p><div class="eggs">' +
         got.map(function (id) { return '<div><b>' + h(D.eggs[id].name) + '</b>' + h(D.eggs[id].what) + '</div>'; }).join('') +
         '</div><p class="legal">Game artwork © Grinding Gear Games. <a href="art/credits.html" target="_blank" rel="noopener">Artwork credits</a></p>',
@@ -420,19 +454,30 @@
 
   /* ---------- input ---------- */
 
+  function blurChat() { var c = $('chat-in'); if (document.activeElement === c) c.blur(); }
+  /* The menu button opens the menu once the clicking stops. Ten quick clicks find a secret instead. */
+  var LOGO_GAP = 400, LOGO_WINDOW = 2500;
+  function brandClick() {
+    var now = Date.now();
+    if (!logoClicks || now - logoFirst > LOGO_WINDOW) { logoClicks = 0; logoFirst = now; }
+    clearTimeout(logoTimer);
+    if (++logoClicks >= 10) { E.egg(S, 'logo'); logoClicks = 0; return; }
+    logoTimer = setTimeout(function () { logoClicks = 0; if (S && !modal && !atTitle()) showMenu(); }, LOGO_GAP);
+  }
   function act(el) {
     var a = el.getAttribute('data-act'), n = parseInt(el.getAttribute('data-n'), 10), id = el.getAttribute('data-id'), res;
+    blurChat();
     if (el.disabled) { Snd.play('no'); return; }
-    if (a === 'choice') { decide(n); return; }
-    if (a === 'cont') { Snd.play('click'); release(); return; }
+    if (a === 'choice' || a === 'cont') {
+      /* A card that is still being put up, or one that just arrived, ignores stray clicks. */
+      if (cardWait || (a === 'choice' && Date.now() - choiceAt < 350)) return;
+      if (a === 'choice') decide(n); else { Snd.play('click'); release(); }
+      return;
+    }
     if (a === 'pause') paused = !paused;
     else if (a === 'speed') { speed = n; paused = false; }
     else if (a === 'mute') Snd.toggle();
-    else if (a === 'brand') {
-      if (++logoClicks >= 10) { E.egg(S, 'logo'); logoClicks = 0; }
-      else if (logoClicks === 1) setTimeout(function () { if (logoClicks === 1 && !modal) showMenu(); if (logoClicks < 10) logoClicks = 0; }, 700);
-      return;
-    }
+    else if (a === 'brand') { brandClick(); return; }
     else if (a === 'hire') {
       var before = S.office, got = E.hireMix(S, Math.min(5, Math.max(1, E.canHire(S))));
       if (got) { Snd.play('click'); if (S.office !== before) drop('Moved to ' + h(D.offices[S.office].name), true); } else Snd.play('no');
@@ -462,10 +507,16 @@
     document.addEventListener('click', function (ev) {
       var m = ev.target.closest ? ev.target.closest('[data-m]') : null;
       if (m && modal) { Snd.play('click'); modal.onAct(m.getAttribute('data-m')); return; }
+      if (modal && modal.dismiss && ev.target === $('modal-root')) { closeModal(); render(); return; }
       var el = ev.target.closest ? ev.target.closest('[data-act]') : null;
       if (el && S && !modal && ev.detail === 0) act(el); // keyboard
     });
     document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') {
+        if (modal && modal.dismiss) { ev.preventDefault(); closeModal(); render(); }
+        else if (ev.target.id === 'chat-in') ev.target.blur();
+        return;
+      }
       if (!S || modal || atTitle() || ev.target.tagName === 'INPUT') return;
       if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
       var SPEEDS = [1, 2, 4], k = ev.key.toLowerCase(), el = null, d = /^Digit[1-5]$/.test(ev.code) ? +ev.code.charAt(5) : 0;
@@ -490,7 +541,7 @@
       if (y + tip.offsetHeight > window.innerHeight - 6) y = ev.clientY - tip.offsetHeight - 10;
       tip.style.left = x + 'px'; tip.style.top = y + 'px';
     });
-    $('chat').addEventListener('submit', function (ev) { ev.preventDefault(); if (S) chat($('chat-in').value); $('chat-in').value = ''; });
+    $('chat').addEventListener('submit', function (ev) { ev.preventDefault(); if (S) chat($('chat-in').value); $('chat-in').value = ''; $('chat-in').blur(); });
     window.addEventListener('resize', function () { if (S) A.drawChart($('chart'), S); });
     E.on(function (type, data) {
       if (type === 'post') addPost(data);
@@ -512,11 +563,10 @@
     }, TICK_MS / speed);
   }
   function start() {
-    paused = false; speed = 1; busy = false; pend = null; reqMsg = {}; bgFor = null; bgHold = null;
+    leaveGame();
+    paused = false; speed = 1; reqMsg = {}; bgFor = null; bgHold = null;
     $('rel').removeAttribute('data-key');
     A.embers($('embers'), 40);
-    clearTimeout(cardTimer);
-    clearTimeout(fadeTimer);
     $('card').innerHTML = ''; $('drops').innerHTML = ''; $('stage').className = '';
     $('title').className = 'hidden';
     document.body.className = '';
@@ -537,6 +587,7 @@
     var saved = null, depth = UI.depth();
     try { saved = JSON.parse(load(SAVE)); } catch (e) { saved = null; }
     var hasSave = saved && saved.v === 1 && !saved.over;
+    leaveGame();
     document.body.className = 'at-title';
     $('title').className = '';
     $('title').innerHTML = '<canvas aria-hidden="true"></canvas><div class="title-box">' + (logoSrc ? '<img src="' + h(logoSrc) + '" alt="Grinding Gear Games">' : '') +
