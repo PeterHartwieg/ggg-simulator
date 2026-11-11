@@ -315,6 +315,15 @@ body.at-title #app { visibility: hidden; }
 .rule { height: 16px; margin: 20px auto 0; width: min(420px, 80%); background: var(--flourish) center / auto 100% no-repeat, linear-gradient(90deg, transparent, var(--bronze) 30%, transparent 44%, transparent 56%, var(--bronze) 70%, transparent) center / 100% 1px no-repeat; }
 .title-box .row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 24px 0 22px; }
 .title-box .btn { padding: 11px 30px; font: 600 20px var(--display); letter-spacing: .12em; }
+/* Share, and the author's pages as small icons. */
+.social { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 16px; }
+.social .btn.share { display: inline-flex; align-items: center; gap: 8px; min-height: 30px; padding: 0 14px; font: 600 14px var(--display); letter-spacing: .1em; }
+.social .btn.share svg { width: 14px; height: 14px; fill: currentColor; }
+.social .btn.share span { min-width: 5.6em; text-align: left; }
+.follow { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid var(--line); background: linear-gradient(#2a2015, #120d08); color: var(--gold); box-shadow: 0 0 0 1px #000; }
+.follow:hover, .follow:focus-visible { color: var(--gold-hi); border-color: var(--gold); }
+.follow svg { width: 16px; height: 16px; fill: currentColor; }
+.modal.menu .social { margin: 4px 0 2px; }
 .legal { font: 11px/1.6 var(--sans); color: #8a8170; text-shadow: 0 1px 3px #000; }
 .legal a { color: var(--gold); }
 

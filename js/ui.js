@@ -535,6 +535,46 @@
   function closeModal() { $('modal-root').className = ''; $('modal-root').innerHTML = ''; modal = null; syncCard(); }
   /* The composer of the menu theme. He has no site of his own that we could find, so this is his credits page. */
   var MUSIC_BY = 'https://www.imdb.com/name/nm1804098/';
+  /* ---------- sharing, and the author's pages ---------- */
+
+  var SITE = 'https://ggg-simulator.com', PITCH = 'Run the studio behind Path of Exile from 2006 to 2026. Still sane, founder?';
+  /* The author's pages. One left empty is not shown. */
+  var FOLLOW = {
+    youtube: 'https://www.youtube.com/channel/UCwiivNsIZuWL3KS27ZkHmTQ',
+    x: 'https://x.com/PeterH40615806',
+    twitch: 'https://www.twitch.tv/thelmon'
+  };
+  var FOLLOW_NAME = { youtube: 'YouTube', x: 'X', twitch: 'Twitch' };
+  var SOCIAL_ICON = {
+    share: '<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.6l6.8-4M8.6 13.4l6.8 4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+    youtube: '<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.5 2.5 0 0 0-1.8 1.8C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3z"/></svg>',
+    x: '<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.6z"/></svg>',
+    twitch: '<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M4.3 2L3 5.4v13.3h4.6V21h2.6l2.4-2.3h3.7L21 14V2zm15 11.1l-2.9 2.9h-4.6l-2.4 2.4v-2.4H5.6V3.7h13.7zM16.4 7.2v5h-1.7v-5zm-4.6 0v5h-1.7v-5z"/></svg>'
+  };
+  function shareLabel(el, msg) {
+    var t = el && (el.querySelector('span') || el);
+    if (!t) return;
+    if (!t.getAttribute('data-was')) t.setAttribute('data-was', t.textContent);
+    t.textContent = msg;
+    setTimeout(function () { t.textContent = t.getAttribute('data-was'); }, 2200);
+  }
+  /* A phone opens its own share sheet. Anywhere else the text and link go to the clipboard, and the button says so. */
+  function share(text, el) {
+    text = text || PITCH;
+    var touch = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+    function post() { window.open('https://x.com/intent/post?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(SITE), '_blank', 'noopener'); }
+    if (touch && navigator.share) { navigator.share({ title: 'Still Sane, Founder?', text: text, url: SITE }).catch(function () { /* closed without sharing */ }); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + ' ' + SITE).then(function () { shareLabel(el, 'Link copied'); }, post);
+    else post();
+  }
+  /* The share button, then one small icon per page of the author's. */
+  function socialRow() {
+    return '<div class="social"><button class="btn share" data-share="">' + SOCIAL_ICON.share + '<span>Share</span></button>' +
+      Object.keys(FOLLOW).filter(function (k) { return FOLLOW[k]; }).map(function (k) {
+        return '<a class="follow" href="' + h(FOLLOW[k]) + '" target="_blank" rel="noopener" data-tip="Follow on ' + FOLLOW_NAME[k] + '" aria-label="Follow on ' + FOLLOW_NAME[k] + '">' + SOCIAL_ICON[k] + '</a>';
+      }).join('') + '</div>';
+  }
+
   /* A volume slider. Zero reads as Off. */
   function volRow(kind, name) {
     var v = Snd.level(kind);
@@ -548,7 +588,7 @@
         '<p class="by">Main Menu by <a href="' + MUSIC_BY + '" target="_blank" rel="noopener">Adgio Hutchings</a></p>' : '') + '</div>' +
         '<div class="sec"><span>Secrets</span><b>' + got.length + ' / ' + total + '</b><i><u style="width:' + (got.length / total * 100) + '%"></u></i></div>' +
         (got.length ? '<div class="eggs">' + got.map(function (id) { return '<div><b>' + h(D.eggs[id].name) + '</b>' + h(D.eggs[id].what) + '</div>'; }).join('') + '</div>' : ''),
-      after: '<p class="legal">Unofficial fan parody. Not affiliated with or endorsed by Grinding Gear Games.<br>Game artwork © Grinding Gear Games. <a href="art/credits.html" target="_blank" rel="noopener">Artwork credits</a></p>',
+      after: socialRow() + '<p class="legal">Unofficial fan parody. Not affiliated with or endorsed by Grinding Gear Games.<br>Game artwork © Grinding Gear Games. <a href="art/credits.html" target="_blank" rel="noopener">Artwork credits</a></p>',
       buttons: [{ label: 'Back to work', act: 'go', cls: 'gold' }, { label: 'Start over', act: 'new' }],
       /* Starting over erases the save, so it asks once more on the same button. */
       onAct: function (act, el) {
@@ -579,8 +619,12 @@
         '<div><label>Weeks of crunch</label><b>' + e.crunchWeeks + '</b></div>' +
         '<div><label>Secrets</label><b>' + e.eggs + ' / ' + e.eggTotal + '</b></div></div>' +
         (depth > 1 ? '<p class="mirrored">Mirrored</p>' : ''),
-      buttons: [{ label: 'Stay a while', act: 'stay' }, { label: '▶ Play GGG Simulator', act: 'play', cls: 'gold' }],
-      onAct: function (act) {
+      buttons: [{ label: 'Share', act: 'share' }, { label: 'Stay a while', act: 'stay' }, { label: '▶ Play GGG Simulator', act: 'play', cls: 'gold' }],
+      onAct: function (act, el) {
+        if (act === 'share') {
+          share(endingTitle(e) + '. ' + e.beat + ' of ' + e.launches + ' launches beat the real Steam peak, ' + pc(e.vsReality) + ' of the real studio\'s players. Still Sane, Founder?', el);
+          return;
+        }
         closeModal();
         if (act === 'play') { store(DEPTH, String(depth + 1)); UI.newGame(true); }
         else { S.pending = null; UI.save(); render(); }
@@ -727,6 +771,10 @@
       if (y + tip.offsetHeight > window.innerHeight - 6) y = ev.clientY - tip.offsetHeight - 10;
       tip.style.left = x + 'px'; tip.style.top = y + 'px';
     });
+    document.addEventListener('click', function (ev) {
+      var sh = ev.target.closest ? ev.target.closest('[data-share]') : null;
+      if (sh) { Snd.play('click'); share(sh.getAttribute('data-share'), sh); }
+    });
     /* Volume sliders in the menu. Letting go plays a click at the new level. */
     document.addEventListener('input', function (ev) {
       var kind = ev.target.getAttribute && ev.target.getAttribute('data-vol');
@@ -796,7 +844,7 @@
     $('title').innerHTML = '<canvas aria-hidden="true"></canvas><div class="title-box">' + mark('title-mark') +
       '<h1>Still Sane, <span>Founder?</span></h1><div class="rule"></div>' +
       '<div class="row">' + (hasSave ? '<button class="btn gold" id="t-continue">Continue, ' + U.fmtDate(saved.week) + '</button>' : '') +
-      '<button class="btn' + (hasSave ? '' : ' gold') + '" id="t-new">New game</button></div>' +
+      '<button class="btn' + (hasSave ? '' : ' gold') + '" id="t-new">New game</button></div>' + socialRow() +
       '<p class="legal">Unofficial fan parody. Not affiliated with or endorsed by Grinding Gear Games.' + (depth > 1 ? ' Simulation depth ' + depth + '.' : '') +
       '<br>Game artwork © Grinding Gear Games. <a href="art/credits.html" target="_blank" rel="noopener">Artwork credits</a>' +
       '<br>Music: Main Menu — Adgio Hutchings (2013). <a href="audio/credits.html" target="_blank" rel="noopener">Music credits</a></p></div>';
